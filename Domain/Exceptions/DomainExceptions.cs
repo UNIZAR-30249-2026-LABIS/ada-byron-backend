@@ -1,15 +1,31 @@
 namespace AdaByron.Domain.Exceptions;
 
-// TODO: Excepciones de dominio — extendidas por la capa API para convertirlas en HTTP responses
+// Excepción base para cualquier violación de regla de negocio del dominio.
+public class ExcepcionDominio : Exception
+{
+    public ExcepcionDominio(string mensaje) : base(mensaje) { }
+}
 
-// ReservationConflictException → 409 Conflict
-//   Lanzada cuando se intenta reservar un espacio ya ocupado en ese tramo horario
+// Rol del usuario no permite reservar ese tipo de espacio → HTTP 403
+public sealed class ExcepcionPermisos : ExcepcionDominio
+{
+    public ExcepcionPermisos(string mensaje) : base(mensaje) { }
+}
 
-// PermissionDeniedException → 403 Forbidden
-//   Lanzada por PermissionPolicy cuando el rol del usuario no permite reservar ese tipo de espacio
+// Reserva solapa con otra ya activa en el mismo espacio → HTTP 409
+public sealed class ExcepcionConflictoReserva : ExcepcionDominio
+{
+    public ExcepcionConflictoReserva(string mensaje) : base(mensaje) { }
+}
 
-// OccupancyLimitException → 422 Unprocessable Entity
-//   Lanzada por OccupancyPolicy cuando el número de asistentes supera el aforo efectivo
+// Número de asistentes supera el aforo efectivo del espacio → HTTP 422
+public sealed class ExcepcionAforoSuperado : ExcepcionDominio
+{
+    public ExcepcionAforoSuperado(string mensaje) : base(mensaje) { }
+}
 
-// ReservationNotFoundException → 404 Not Found
-//   Lanzada cuando se intenta operar sobre una reserva inexistente
+// Cambio de categoría no permitido por la Matriz de Mutabilidad (Regla C) → HTTP 422
+public sealed class ExcepcionCambioCategoria : ExcepcionDominio
+{
+    public ExcepcionCambioCategoria(string mensaje) : base(mensaje) { }
+}
