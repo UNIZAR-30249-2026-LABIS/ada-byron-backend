@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AdaByron.Domain</RootNamespace>
+    <AssemblyName>AdaByron.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    El Domain es el núcleo estable y central del sistema (DDD).
+    No tiene dependencias externas para garantizar su aislamiento.
+    Contiene: Entities, ValueObjects, Services, Policies, Aggregates, Factories.
+  -->
+
+</Project>

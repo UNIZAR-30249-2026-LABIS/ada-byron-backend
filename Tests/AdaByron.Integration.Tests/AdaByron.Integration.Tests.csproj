@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>AdaByron.Integration.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\AdaByron.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Application\AdaByron.Application.csproj"       />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk"         Version="17.12.0" />
+    <PackageReference Include="xunit"                          Version="2.9.3"   />
+    <PackageReference Include="xunit.runner.visualstudio"       Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions"               Version="7.0.0"   />
+    <!-- Testcontainers levanta PostgreSQL+PostGIS en memoria para tests de integración -->
+    <PackageReference Include="Testcontainers.PostgreSql"      Version="4.1.0"   />
+  </ItemGroup>
+
+</Project>

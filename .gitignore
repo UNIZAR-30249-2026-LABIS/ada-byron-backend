@@ -1,0 +1,30 @@
+# ── .NET / C# ────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage/
+*.trx
+*.nupkg
+
+# ── ASP.NET secrets ──────────────────────────────────────────
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# ── Entorno ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Docker ───────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── Editor ───────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.DS_Store
+Thumbs.db

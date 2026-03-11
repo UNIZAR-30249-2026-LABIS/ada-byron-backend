@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Application/">
+    <Project Path="Application/AdaByron.Application.csproj" />
+  </Folder>
+  <Folder Name="/Domain/">
+    <Project Path="Domain/AdaByron.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure/AdaByron.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/AdaByron.Application.Tests/AdaByron.Application.Tests.csproj" />
+    <Project Path="Tests/AdaByron.Domain.Tests/AdaByron.Domain.Tests.csproj" />
+    <Project Path="Tests/AdaByron.Integration.Tests/AdaByron.Integration.Tests.csproj" />
+  </Folder>
+  <Project Path="AdaByron.API/AdaByron.API.csproj" />
+</Solution>

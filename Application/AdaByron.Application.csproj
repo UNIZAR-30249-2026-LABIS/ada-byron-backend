@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AdaByron.Application</RootNamespace>
+    <AssemblyName>AdaByron.Application</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Referencia al núcleo de dominio -->
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\AdaByron.Domain.csproj" />
+  </ItemGroup>
+
+  <!-- API + SignalR (built-in en ASP.NET Core 9) + Swagger -->
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore"       Version="7.3.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>

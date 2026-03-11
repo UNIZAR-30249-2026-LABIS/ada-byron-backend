@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AdaByron.Infrastructure</RootNamespace>
+    <AssemblyName>AdaByron.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Referencia a Domain (para implementar contratos de repositorio) -->
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\AdaByron.Domain.csproj" />
+  </ItemGroup>
+
+  <!-- EF Core 9 + PostgreSQL + PostGIS (NetTopologySuite) -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore"                                  Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design"                           Version="9.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"                          Version="9.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite"         Version="9.0.4" />
+    <PackageReference Include="NetTopologySuite"                                                Version="2.5.0" />
+  </ItemGroup>
+
+</Project>
