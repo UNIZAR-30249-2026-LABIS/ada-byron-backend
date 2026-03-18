@@ -1,4 +1,6 @@
+using AdaByron.Application.Ports.Out;
 using AdaByron.Domain.Interfaces;
+using AdaByron.Infrastructure.Identity;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using AdaByron.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -23,10 +25,13 @@ public static class InfrastructureExtensions
                     npgsql.MigrationsAssembly("AdaByron.Infrastructure");     // migraciones en Infrastructure
                 }));
 
-        // Repositorios — conecta interfaces de Application/Ports/Out con implementaciones EF Core
+        // Repositorios
         services.AddScoped<IEspacioRepository, EspacioRepository>();
-        services.AddScoped<IPersonaRepository, PersonaRepository>();
+        services.AddScoped<IPersonaRepository,  PersonaRepository>();
         services.AddScoped<IReservaRepository,  ReservaRepository>();
+
+        // Servicios externos (puertos de salida)
+        services.AddScoped<ITokenService, TokenService>();
 
         return services;
     }

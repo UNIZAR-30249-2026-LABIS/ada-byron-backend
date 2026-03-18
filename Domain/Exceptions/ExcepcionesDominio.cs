@@ -29,3 +29,10 @@ public sealed class ExcepcionCambioCategoria : ExcepcionDominio
 {
     public ExcepcionCambioCategoria(string mensaje) : base(mensaje) { }
 }
+
+// Email no existe en la BD — acceso denegado → HTTP 401
+public sealed class ExcepcionUsuarioNoRegistrado : ExcepcionDominio
+{
+    public ExcepcionUsuarioNoRegistrado(string email)
+        : base($"El usuario '{email}' no está registrado en el sistema.") { }
+}
