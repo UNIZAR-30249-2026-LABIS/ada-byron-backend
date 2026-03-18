@@ -1,8 +1,10 @@
 using AdaByron.Application.Ports.Out;
 using AdaByron.Domain.Interfaces;
 using AdaByron.Infrastructure.Identity;
+using AdaByron.Infrastructure.Persistence;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using AdaByron.Infrastructure.Persistence.Repositories;
+using AdaByron.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,8 +23,8 @@ public static class InfrastructureExtensions
                 connectionString,
                 npgsql =>
                 {
-                    npgsql.UseNetTopologySuite();                              // soporte PostGIS
-                    npgsql.MigrationsAssembly("AdaByron.Infrastructure");     // migraciones en Infrastructure
+                    npgsql.UseNetTopologySuite();
+                    npgsql.MigrationsAssembly("AdaByron.Infrastructure");
                 }));
 
         // Repositorios
@@ -30,8 +32,14 @@ public static class InfrastructureExtensions
         services.AddScoped<IPersonaRepository,  PersonaRepository>();
         services.AddScoped<IReservaRepository,  ReservaRepository>();
 
+        // Transacción ACID (IUnitOfWork → UnitOfWork por petición HTTP)
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         // Servicios externos (puertos de salida)
         services.AddScoped<ITokenService, TokenService>();
+
+        // Aforo dinámico del edificio: singleton para mantener el estado entre peticiones
+        services.AddSingleton<IAforoEdificioService, AforoEdificioService>();
 
         return services;
     }
