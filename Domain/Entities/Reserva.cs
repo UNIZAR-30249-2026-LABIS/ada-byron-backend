@@ -25,6 +25,8 @@ public sealed class Reserva
         Franja    = franja ?? throw new ExcepcionDominio("La franja horaria no puede ser nula.");
     }
 
+    private Reserva() { }
+    
     // Constructor privado para rehidratar desde base de datos sin reejecutar validaciones.
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja)
     {
