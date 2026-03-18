@@ -16,12 +16,23 @@
   -->
   <ItemGroup>
     <ProjectReference Include="..\Application\AdaByron.Application.csproj" />
+    <!-- Infrastructure solo referenciada desde Program.cs (Composition Root) -->
+    <ProjectReference Include="..\Infrastructure\AdaByron.Infrastructure.csproj" />
   </ItemGroup>
 
-  <!-- Swagger / OpenAPI -->
+  <!-- EF Core Design (para migraciones en desarrollo) -->
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore"       Version="7.3.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Swagger / OpenAPI + JWT -->
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore"                        Version="7.3.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi"                  Version="9.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
   </ItemGroup>
 
 </Project>

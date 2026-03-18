@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -8,15 +8,14 @@
     <AssemblyName>AdaByron.Application</AssemblyName>
   </PropertyGroup>
 
-  <!-- Referencia al núcleo de dominio -->
+  <!-- Application solo conoce Domain — sin dependencias de HTTP ni de Swagger -->
   <ItemGroup>
     <ProjectReference Include="..\Domain\AdaByron.Domain.csproj" />
   </ItemGroup>
 
-  <!-- API + SignalR (built-in en ASP.NET Core 9) + Swagger -->
+  <!-- Necesario para IServiceCollection en ApplicationExtensions -->
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore"       Version="7.3.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
   </ItemGroup>
 
 </Project>
