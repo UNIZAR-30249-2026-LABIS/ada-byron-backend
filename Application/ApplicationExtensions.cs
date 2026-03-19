@@ -1,4 +1,5 @@
 using AdaByron.Application.UseCases.Auth;
+using AdaByron.Application.UseCases.Reservations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AdaByron.Application;
@@ -10,6 +11,10 @@ public static class ApplicationExtensions
     {
         services.AddScoped<LoginUseCase>();
 
+        // Registramos casos de uso funcionales
+     services.AddScoped<MakeReservationUseCase>();
+        services.AddScoped<ReservationAppService>();
+        
         // TODO: registrar los demás casos de uso cuando se implementen:
         // services.AddScoped<HazReservaUseCase>();
         // services.AddScoped<ApruebaReservaUseCase>();
