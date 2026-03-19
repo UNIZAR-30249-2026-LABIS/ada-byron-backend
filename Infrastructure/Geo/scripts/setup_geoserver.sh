@@ -6,17 +6,14 @@ GEOSERVER_USER="${GEOSERVER_USER:-admin}"
 GEOSERVER_PASSWORD="${GEOSERVER_PASSWORD:-geoserver}"
 
 WORKSPACE="${WORKSPACE:-adabyron}"
-STORE="${STORE:-adabyron_postgis}"
+STORE="${STORE:-adabyron_postgis_unified}"
 
-# IMPORTANTE:
-# - Si GeoServer está en Docker y PostgreSQL también, usa el nombre del servicio de docker-compose, por ejemplo "postgres" o "postgis"
-# - Si GeoServer está en Docker pero PostgreSQL está fuera, suele funcionar "host.docker.internal"
-# - Si GeoServer corre fuera de Docker, suele ser "localhost"
-DB_HOST="${DB_HOST:-host.docker.internal}"
+# Como GeoServer y PostgreSQL están en el mismo docker-compose:
+DB_HOST="${DB_HOST:-postgres}"
 DB_PORT="${DB_PORT:-5432}"
 DB_NAME="${DB_NAME:-adabyron}"
-DB_USER="${DB_USER:-postgres}"
-DB_PASSWORD="${DB_PASSWORD:-postgres}"
+DB_USER="${DB_USER:-adabyron_user}"
+DB_PASSWORD="${DB_PASSWORD:-adabyron_pass}"
 
 STYLE_NAME="${STYLE_NAME:-spaces_ui_style}"
 STYLE_FILE="${STYLE_FILE:-Infrastructure/Geo/styles/spaces_ui_style.sld}"
@@ -32,7 +29,8 @@ LAYERS=(
 )
 
 echo "Esperando a GeoServer..."
-until curl -s -u "${GEOSERVER_USER}:${GEOSERVER_PASSWORD}" "${GEOSERVER_URL}/rest/about/version.xml" >/dev/null; do
+until curl -s -u "${GEOSERVER_USER}:${GEOSERVER_PASSWORD}" \
+  "${GEOSERVER_URL}/rest/about/version.xml" >/dev/null; do
   sleep 3
 done
 
