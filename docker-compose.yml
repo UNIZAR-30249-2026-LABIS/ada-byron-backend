@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: adabyron_user
       POSTGRES_PASSWORD: adabyron_pass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,6 +28,19 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.2
+    container_name: adabyron_geoserver
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      INSTALL_EXTENSIONS: "true"
+      STABLE_EXTENSIONS: "css-plugin"
     depends_on:
       postgres:
         condition: service_healthy
