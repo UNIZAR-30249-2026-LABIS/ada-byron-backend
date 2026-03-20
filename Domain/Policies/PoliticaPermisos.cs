@@ -1,4 +1,3 @@
-namespace AdaByron.Domain.Policies;
 
 // TODO: PermissionPolicy — Motor de reglas F de permisos por rol
 // Implementa las Reglas de Autorización (DDD Policies):
