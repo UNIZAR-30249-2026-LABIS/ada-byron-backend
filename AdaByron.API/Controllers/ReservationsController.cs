@@ -1,5 +1,5 @@
 using AdaByron.Application.DTOs;
-using AdaByron.Application.UseCases.Reservations;
+using AdaByron.Application.UseCases.Reservas;
 using AdaByron.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,17 +9,17 @@ namespace AdaByron.API.Controllers;
 [Route("api/reservations")]
 public class ReservationsController : ControllerBase
 {
-    private readonly ReservationAppService _reservationAppService;
+    private readonly CrearReservaUseCase _crearReservaUseCase;
 
-    public ReservationsController(ReservationAppService reservationAppService)
+    public ReservationsController(CrearReservaUseCase crearReservaUseCase)
     {
-        _reservationAppService = reservationAppService;
+        _crearReservaUseCase = crearReservaUseCase;
     }
 
     [HttpPost]
-    public async Task<ActionResult<ReservationDto>> Create([FromBody] CreateReservationRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<ReservaResponseDTO>> Create([FromBody] CrearReservaRequestDTO request)
     {
-        var result = await _reservationAppService.MakeReservation(request, cancellationToken);
+        var result = await _crearReservaUseCase.ExecuteAsync(request);
         return Ok(result);
     }
 }

@@ -49,6 +49,11 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasMaxLength(30)
                .IsRequired();
 
+        // El departamento es opcional (solo se usa en laboratorios)
+        builder.Property(e => e.Departamento)
+               .HasMaxLength(150)
+               .IsRequired(false);
+
         // Ubicación geoespacial PostGIS (shadow property — no contamina el Dominio)
         // Accesible desde repositorio via: entry.Property<Point>("Ubicacion")
         builder.Property<Point>("Ubicacion")

@@ -6,13 +6,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AdaByron.Infrastructure.Persistence;
 
-<<<<<<< HEAD
-=======
 /// <summary>
 /// Implementación de IUnitOfWork usando la transacción del DbContext de EF Core.
 /// Permite usar serializable isolation para prevenir solapamientos concurrentes.
 /// </summary>
->>>>>>> main
 public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
 {
     private IDbContextTransaction? _transaction;
@@ -25,12 +22,8 @@ public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
     public async Task CommitAsync()
     {
         if (_transaction is null)
-<<<<<<< HEAD
-            throw new InvalidOperationException("No active transaction.");
-            
-=======
             throw new InvalidOperationException("No hay ninguna transacción activa.");
->>>>>>> main
+            
         await context.SaveChangesAsync();
         await _transaction.CommitAsync();
     }
@@ -43,16 +36,10 @@ public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
 
     public async Task AcquireEspacioLockAsync(string espacioId)
     {
-<<<<<<< HEAD
-        var lockKey = Math.Abs(string.GetHashCode(espacioId, StringComparison.OrdinalIgnoreCase));
-        await context.Database.ExecuteSqlRawAsync($"SELECT pg_advisory_xact_lock({lockKey})");
-=======
         // Bloqueo consultivo a nivel de transacción en PostgreSQL (advisory lock)
         // Garantiza acceso exclusivo al espacio durante la transacción activa.
         var lockKey = Math.Abs(string.GetHashCode(espacioId, StringComparison.OrdinalIgnoreCase));
-        await context.Database.ExecuteSqlRawAsync(
-            $"SELECT pg_advisory_xact_lock({lockKey})");
->>>>>>> main
+        await context.Database.ExecuteSqlRawAsync($"SELECT pg_advisory_xact_lock({lockKey})");
     }
 
     public void Dispose() => _transaction?.Dispose();
