@@ -1,10 +1,25 @@
 namespace AdaByron.Application.DTOs;
 
-// TODO: CreateReservationRequest — DTO de entrada para MakeReservation
-// Propiedades: RequesterEmail, SpaceId, StartTime, EndTime, AttendeeCount
+public sealed class CreateReservationRequest
+{
+    public string RequesterEmail { get; set; } = string.Empty;
+    public string SpaceId { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public int AttendeeCount { get; set; }
+}
 
-// TODO: ReservationDto — DTO de salida
-// Propiedades: Id, RequesterEmail, SpaceName, StartTime, EndTime, Status
+public sealed class ReservationDto
+{
+    public Guid Id { get; set; }
+    public string RequesterEmail { get; set; } = string.Empty;
+    public string SpaceName { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public string Status { get; set; } = string.Empty;
+}
 
-// TODO: IdentifyByEmailDto — identificación del usuario (sin cuenta)
-// Propiedades: Email  →  Role y Department se resuelven del directorio universitario
+public sealed class IdentifyByEmailDto
+{
+    public string Email { get; set; } = string.Empty;
+}

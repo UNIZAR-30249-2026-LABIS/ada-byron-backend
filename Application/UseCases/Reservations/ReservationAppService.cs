@@ -1,9 +1,18 @@
-namespace AdaByron.Application.Services;
+using AdaByron.Application.DTOs;
 
-// TODO: ReservationAppService — coordina objetos de dominio para los Casos de Uso
-// Casos de uso orquestados:
-//   - MakeReservation(requesterEmail, spaceId, start, end, attendees)
-//   - GetActiveReservations() → IEnumerable<Reservation>
-//   - ApproveReservation(reservationId)
-//   - RejectReservation(reservationId, reason)
-//   - PurgeInvalidReservationsAsync() → invocado por background job
+namespace AdaByron.Application.UseCases.Reservations;
+
+public sealed class ReservationAppService
+{
+    private readonly MakeReservationUseCase _makeReservationUseCase;
+
+    public ReservationAppService(MakeReservationUseCase makeReservationUseCase)
+    {
+        _makeReservationUseCase = makeReservationUseCase;
+    }
+
+    public Task<ReservationDto> MakeReservation(CreateReservationRequest request, CancellationToken cancellationToken = default)
+    {
+        return _makeReservationUseCase.Execute(request, cancellationToken);
+    }
+}

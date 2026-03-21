@@ -37,6 +37,12 @@ public static class InfrastructureExtensions
 
         // Servicios externos (puertos de salida)
         services.AddScoped<ITokenService, TokenService>();
+        
+        // Control de transacciones ACID y bloqueos
+        services.AddScoped<IUnitOfWork, AdaByron.Infrastructure.Persistence.UnitOfWork>();
+
+        // Servicio Singleton de Aforo Dinámico
+        services.AddSingleton<IAforoEdificioService, AdaByron.Infrastructure.Services.AforoEdificioService>();
 
         // Aforo dinámico del edificio: singleton para mantener el estado entre peticiones
         services.AddSingleton<IAforoEdificioService, AforoEdificioService>();
