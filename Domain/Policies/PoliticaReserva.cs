@@ -20,7 +20,7 @@ public static class PoliticaReserva
             Rol.TecnicoLab => categoriaReserva switch
             {
                 TipoEspacio.SalaComun   => true,
-                TipoEspacio.Seminario   => true,
+                TipoEspacio.Seminario   => true, // Interpretación permisiva (pág 12)
                 TipoEspacio.Laboratorio => MismoDepartamento(deptPersona, deptEspacio),
                 _                       => false
             },
@@ -32,45 +32,18 @@ public static class PoliticaReserva
                 TipoEspacio.Laboratorio => MismoDepartamento(deptPersona, deptEspacio),
                 _                       => false
             },
-            Rol.Conserje   => categoriaReserva != TipoEspacio.Despacho,
-            Rol.Gerente    => categoriaReserva != TipoEspacio.Despacho,
-            _              => false
+            Rol.Conserje => categoriaReserva != TipoEspacio.Despacho,
+            Rol.Gerente  => categoriaReserva != TipoEspacio.Despacho,
+            _            => false
         };
 
         if (!permitido)
             LanzarErrorPermiso(rol, categoriaReserva);
     }
 
-    private static bool MismoDepartamento(string? deptPersona, string? deptEspacio)
-        => !string.IsNullOrWhiteSpace(deptPersona)
-        && !string.IsNullOrWhiteSpace(deptEspacio)
-        && deptPersona.Trim().Equals(deptEspacio.Trim(), StringComparison.OrdinalIgnoreCase);
-
-    private static void LanzarErrorPermiso(Rol rol, TipoEspacio tipo)
-    {
-        var nombreTipo = tipo == TipoEspacio.SalaComun ? "Salas Comunes" : tipo.ToString() + "s";
-        
-        var mensaje = rol switch
-        {
-            Rol.Estudiante => "Rol no autorizado. Solo puede reservar Sala Común.",
-            Rol.TecnicoLab => tipo == TipoEspacio.Laboratorio
-                ? "Departamento distinto al del Laboratorio."
-                : $"Rol no autorizado para {nombreTipo}.",
-            Rol.Docente    => tipo == TipoEspacio.Laboratorio
-                ? "Departamento distinto al del Laboratorio."
-                : $"Rol no autorizado para {nombreTipo}.",
-            Rol.Conserje   => "Rol no autorizado para Despachos.",
-            Rol.Gerente    => "Rol no autorizado para Despachos.",
-            _              => $"Rol no autorizado para {nombreTipo}."
-        };
-
-        throw new ExcepcionPermisos(mensaje);
-    }
-
     // ── 2. Validación de Disponibilidad (HU-15 / HU-T2) ───────────────────────
     public static void VerificarDisponibilidad(string codigoEspacio, FranjaHoraria franja, bool existeSolapamiento)
     {
-        // Se evalúa el solapamiento que determinó el UseCase bajo la transacción ACID con pg_advisory_xact_lock
         if (existeSolapamiento)
         {
             throw new ExcepcionConflictoReserva(
@@ -82,7 +55,6 @@ public static class PoliticaReserva
     // ── 3. Validación de Aforo Dinámico (HU-14 / HU-10) ───────────────────────
     public static void VerificarAforo(Aforo aforoEspacio, string codigoEspacio, int numeroAsistentes, double porcentajeEdificio)
     {
-        // Fórmula: Asistentes <= Capacidad Máxima * (Porcentaje Edificio / 100)
         var factor = porcentajeEdificio / 100.0;
         var capacidadPermitida = (int)Math.Floor(aforoEspacio.Valor * factor);
 
@@ -90,12 +62,12 @@ public static class PoliticaReserva
         {
             throw new ExcepcionAforoSuperado(
                 $"Aforo excedido. El espacio '{codigoEspacio}' admite un máximo de {capacidadPermitida} personas " +
-                $"({porcentajeEdificio}% del aforo total de {aforoEspacio.Valor}). " +
+                $"({porcentajeEdificio}% del aforo de {aforoEspacio.Valor}). " +
                 $"Asistentes intentados: {numeroAsistentes}.");
         }
     }
 
-    // ── Punto de Entrada Integrado ────────────────────────────────────────────
+    // ── Punto de Entrada Integrado para el Use Case ──────────────────────────
     public static void ValidarCreacion(
         Persona persona, 
         Espacio espacio,
@@ -108,5 +80,26 @@ public static class PoliticaReserva
         VerificarPermiso(persona.Rol, espacio.CategoriaReserva, persona.Departamento, departamentoEspacio);
         VerificarDisponibilidad(espacio.CodigoEspacio, franja, existeSolapamiento);
         VerificarAforo(espacio.Aforo, espacio.CodigoEspacio, numeroAsistentes, porcentajeEdificio);
+    }
+
+    private static bool MismoDepartamento(string? deptPersona, string? deptEspacio)
+        => !string.IsNullOrWhiteSpace(deptPersona)
+        && !string.IsNullOrWhiteSpace(deptEspacio)
+        && deptPersona.Trim().Equals(deptEspacio.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static void LanzarErrorPermiso(Rol rol, TipoEspacio tipo)
+    {
+        var mensaje = rol switch
+        {
+            Rol.Estudiante => "Un estudiante solo puede reservar Salas Comunes.",
+            Rol.TecnicoLab => tipo == TipoEspacio.Laboratorio 
+                ? "Un Técnico de Lab solo puede reservar laboratorios de su propio departamento."
+                : $"Un Técnico de Lab no tiene permiso para reservar espacios de tipo '{tipo}'.",
+            Rol.Docente    => tipo == TipoEspacio.Laboratorio
+                ? "Un Docente solo puede reservar laboratorios de su propio departamento."
+                : $"Un Docente no tiene permiso para reservar espacios de tipo '{tipo}'.",
+            _              => $"El rol '{rol}' no tiene permisos para reservar {tipo}s o despachos."
+        };
+        throw new ExcepcionPermisos(mensaje);
     }
 }

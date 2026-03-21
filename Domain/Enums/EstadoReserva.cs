@@ -1,10 +1,9 @@
 namespace AdaByron.Domain.Enums;
 
-// Estados del ciclo de vida de una reserva.
+// Estado del ciclo de vida de una Reserva.
 public enum EstadoReserva
 {
-    Pendiente,   // Esperando revisión del Gerente
-    Aprobada,    // Confirmada y activa
-    Rechazada,   // Denegada con motivo
-    Invalida,    // Marcada por cambio de configuración del espacio (se elimina en 7 días)
+    Pendiente,   // Creada, pendiente de aprobación
+    Aceptada,    // Aprobada por el sistema o el gerente
+    Rechazada,   // Denegada (solapamiento, permisos, aforo)
 }

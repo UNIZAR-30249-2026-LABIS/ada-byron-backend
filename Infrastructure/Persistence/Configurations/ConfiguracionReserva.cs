@@ -1,4 +1,5 @@
 using AdaByron.Domain.Entities;
+using AdaByron.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -20,7 +21,19 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
                .HasMaxLength(20)
                .IsRequired();
 
-        // ValueObject FranjaHoraria: se persiste en dos columnas dentro de la misma tabla
+        builder.Property(r => r.NumeroAsistentes)
+               .IsRequired();
+
+        // Estado persiste como string para legibilidad en la BD
+        builder.Property(r => r.Estado)
+               .HasConversion(
+                   e => e.ToString(),
+                   s => Enum.Parse<EstadoReserva>(s))
+               .HasColumnName("estado")
+               .HasMaxLength(20)
+               .IsRequired();
+
+        // ValueObject FranjaHoraria: dos columnas dentro de la misma tabla
         builder.OwnsOne(r => r.Franja, fb =>
         {
             fb.Property(f => f.Inicio)
@@ -32,7 +45,7 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
               .IsRequired();
         });
 
-        // Relaciones con Persona y Espacio por FK (sin navegación en la entidad)
+        // FK hacia Persona y Espacio (sin propiedad de navegación en la entidad)
         builder.HasOne<Persona>()
                .WithMany()
                .HasForeignKey(r => r.PersonaId)
