@@ -32,5 +32,18 @@ services:
       postgres:
         condition: service_healthy
 
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.2
+    container_name: adabyron_geoserver
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      INSTALL_EXTENSIONS: "true"
+      STABLE_EXTENSIONS: "css-plugin"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
