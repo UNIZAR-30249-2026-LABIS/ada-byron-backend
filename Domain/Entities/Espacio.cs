@@ -10,10 +10,11 @@ public sealed class Espacio
 {
     public string      CodigoEspacio    { get; }
     public string      Nombre           { get; private set; }
-    public Planta     Planta           { get; private set; }
+    public Planta      Planta           { get; private set; }
     public Aforo       Aforo            { get; private set; }
     public TipoEspacio TipoFisico       { get; }                // inmutable
     public TipoEspacio CategoriaReserva { get; private set; }   // mutable (Regla C)
+    public string?     Departamento     { get; private set; }   // para laboratorios (Regla F3)
 
     // Matriz de Mutabilidad (Regla C):
     //   Aula        → Aula, Seminario, SalaComun
@@ -47,6 +48,14 @@ public sealed class Espacio
         CategoriaReserva = tipoFisico;
     }
 
+    // Constructor con departamento (laboratorios)
+    public Espacio(string codigoEspacio, string nombre, Planta planta, Aforo aforo,
+                   TipoEspacio tipoFisico, string? departamento)
+        : this(codigoEspacio, nombre, planta, aforo, tipoFisico)
+    {
+        Departamento = departamento?.Trim();
+    }
+
     // Cambia la categoría de reserva respetando la Matriz de Mutabilidad.
     public void CambiarCategoria(TipoEspacio nuevaCategoria)
     {
@@ -58,6 +67,17 @@ public sealed class Espacio
                 $"en el espacio '{CodigoEspacio}'.");
 
         CategoriaReserva = nuevaCategoria;
+    }
+
+    // ── Regla F6: Disponibilidad ──────────────────────────────────────────────
+    // Devuelve true si no hay reservas en estado Aceptada que solapen con la franja dada.
+    public bool IsDisponible(FranjaHoraria franja, IEnumerable<Reserva> reservasActivas)
+    {
+        return !reservasActivas.Any(r =>
+            r.EspacioId == CodigoEspacio
+            && r.Estado  == EstadoReserva.Aceptada
+            && r.Franja.Inicio < franja.Fin
+            && r.Franja.Fin   > franja.Inicio);
     }
 
     public override bool Equals(object? obj) =>
