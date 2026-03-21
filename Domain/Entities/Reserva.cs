@@ -34,7 +34,12 @@ public sealed class Reserva
         Estado           = EstadoReserva.Pendiente;
     }
 
-    private Reserva() { }
+    private Reserva() 
+    { 
+        PersonaId = null!;
+        EspacioId = null!;
+        Franja    = null!;
+    }
 
     // Constructor para reconstituir desde BD (sin reejecutar invariantes)
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,

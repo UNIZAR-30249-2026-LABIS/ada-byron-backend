@@ -42,18 +42,19 @@ public class CrearReservaUseCase(
             //    mismo espacio/hora entren en la sección crítica a la vez (HU-T2)
             await uow.AcquireEspacioLockAsync(request.CodigoEspacio);
 
-            // 4. Re-leer las reservas del espacio DENTRO de la TX para tener
-            //    una vista consistente (evita phantom reads)
+            // 4. Re-leer las reservas y calcular si existe un solapamiento real (HU-T2 / Regla F6)
             var reservasExistentes = await reservas.GetByEspacioAsync(request.CodigoEspacio);
+            var existeSolapamiento = !espacio.IsDisponible(franja, reservasExistentes);
 
             // 5. Motor de Reglas F1-F6 (lanza ExcepcionDominio si algo falla)
             PoliticaReserva.ValidarCreacion(
-                persona,
-                espacio,
-                franja,
-                request.NumeroAsistentes,
-                reservasExistentes,
-                porcentajeOcupacion);   // F5 con porcentaje dinámico
+                persona: persona,
+                espacio: espacio,
+                departamentoEspacio: espacio.Departamento,
+                franja: franja,
+                numeroAsistentes: request.NumeroAsistentes,
+                existeSolapamiento: existeSolapamiento,
+                porcentajeEdificio: porcentajeOcupacion);   // F5 con porcentaje dinámico
 
             // 6. Crear la reserva y auto-aceptar (flujo normal)
             var reserva = new Reserva(
