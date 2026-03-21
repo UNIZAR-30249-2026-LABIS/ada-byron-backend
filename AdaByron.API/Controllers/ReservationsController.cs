@@ -19,22 +19,7 @@ public class ReservationsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ReservationDto>> Create([FromBody] CreateReservationRequest request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var result = await _reservationAppService.MakeReservation(request, cancellationToken);
-            return Ok(result);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (ExcepcionDominio ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _reservationAppService.MakeReservation(request, cancellationToken);
+        return Ok(result);
     }
 }
