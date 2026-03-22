@@ -23,6 +23,7 @@ public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
     {
         if (_transaction is null)
             throw new InvalidOperationException("No hay ninguna transacción activa.");
+            
         await context.SaveChangesAsync();
         await _transaction.CommitAsync();
     }
@@ -38,8 +39,7 @@ public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
         // Bloqueo consultivo a nivel de transacción en PostgreSQL (advisory lock)
         // Garantiza acceso exclusivo al espacio durante la transacción activa.
         var lockKey = Math.Abs(string.GetHashCode(espacioId, StringComparison.OrdinalIgnoreCase));
-        await context.Database.ExecuteSqlRawAsync(
-            $"SELECT pg_advisory_xact_lock({lockKey})");
+        await context.Database.ExecuteSqlRawAsync($"SELECT pg_advisory_xact_lock({lockKey})");
     }
 
     public void Dispose() => _transaction?.Dispose();

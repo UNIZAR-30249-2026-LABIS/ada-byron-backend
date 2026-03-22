@@ -38,7 +38,7 @@ public static class InfrastructureExtensions
         // Servicios externos (puertos de salida)
         services.AddScoped<ITokenService, TokenService>();
 
-        // Aforo dinámico del edificio: singleton para mantener el estado entre peticiones
+        // Servicio Aforo dinámico del edificio: singleton para mantener el estado entre peticiones
         services.AddSingleton<IAforoEdificioService, AforoEdificioService>();
 
         return services;

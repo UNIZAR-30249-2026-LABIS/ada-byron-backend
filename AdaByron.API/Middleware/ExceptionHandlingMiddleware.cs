@@ -34,6 +34,14 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         {
             await EscribirProblema(context, ex.Message, (int)HttpStatusCode.BadRequest);
         }
+        catch (ArgumentException ex)
+        {
+            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.BadRequest);
+        }
+        catch (InvalidOperationException ex)
+        {
+            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.NotFound);
+        }
     }
 
     private static async Task EscribirProblema(HttpContext context, string detalle, int status)
