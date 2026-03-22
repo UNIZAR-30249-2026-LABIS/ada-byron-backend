@@ -22,7 +22,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Ada Byron API", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "Ada Byron API", Version = "v1", Description = "API REST de reservas de los espacios del Edificio Ada Byron." });
+    
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 // ── Autenticación JWT ─────────────────────────────────────────────────────────

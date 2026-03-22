@@ -42,7 +42,7 @@ public class PoliticaReservaTests
         var salaComun = CrearEspacio(TipoEspacio.SalaComun, 10);
         
         // No lanza excepción
-        PoliticaReserva.VerificarPermiso(estudiante, salaComun);
+        PoliticaReserva.VerificarPermiso(estudiante.Rol, salaComun.CategoriaReserva, estudiante.Departamento, salaComun.Departamento);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class PoliticaReservaTests
         var aula = CrearEspacio(TipoEspacio.Aula, 50);
 
         Assert.Throws<ExcepcionPermisos>(() => 
-            PoliticaReserva.VerificarPermiso(estudiante, aula));
+            PoliticaReserva.VerificarPermiso(estudiante.Rol, aula.CategoriaReserva, estudiante.Departamento, aula.Departamento));
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class PoliticaReservaTests
         var tecnico = CrearPersona(Rol.TecnicoLab, "Informatica");
         var lab = CrearEspacio(TipoEspacio.Laboratorio, 20, "Informatica");
 
-        PoliticaReserva.VerificarPermiso(tecnico, lab);
+        PoliticaReserva.VerificarPermiso(tecnico.Rol, lab.CategoriaReserva, tecnico.Departamento, lab.Departamento);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class PoliticaReservaTests
         var lab = CrearEspacio(TipoEspacio.Laboratorio, 20, "Matematicas");
 
         Assert.Throws<ExcepcionPermisos>(() => 
-            PoliticaReserva.VerificarPermiso(tecnico, lab));
+            PoliticaReserva.VerificarPermiso(tecnico.Rol, lab.CategoriaReserva, tecnico.Departamento, lab.Departamento));
     }
 
     [Fact]
@@ -82,9 +82,9 @@ public class PoliticaReservaTests
         var conserje = CrearPersona(Rol.Conserje);
         var despacho = CrearEspacio(TipoEspacio.Despacho, 2);
 
-        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(docente, despacho));
-        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(gerente, despacho));
-        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(conserje, despacho));
+        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(docente.Rol, despacho.CategoriaReserva, docente.Departamento, despacho.Departamento));
+        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(gerente.Rol, despacho.CategoriaReserva, gerente.Departamento, despacho.Departamento));
+        Assert.Throws<ExcepcionPermisos>(() => PoliticaReserva.VerificarPermiso(conserje.Rol, despacho.CategoriaReserva, conserje.Departamento, despacho.Departamento));
     }
 
     // ── Pruebas de Aforo (F5) ────────────────────────────────────────────────
@@ -94,7 +94,7 @@ public class PoliticaReservaTests
     {
         var espacio = CrearEspacio(TipoEspacio.Aula, 100);
         // 80% de 100 = 80
-        PoliticaReserva.VerificarAforo(espacio, numeroAsistentes: 80, porcentajeOcupacion: 0.80);
+        PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio, numeroAsistentes: 80, porcentajeEdificio: 80.0);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class PoliticaReservaTests
         var espacio = CrearEspacio(TipoEspacio.Aula, 100);
         // 50% de 100 = 50 permitidos.
         Assert.Throws<ExcepcionAforoSuperado>(() => 
-            PoliticaReserva.VerificarAforo(espacio, numeroAsistentes: 51, porcentajeOcupacion: 0.50));
+            PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio, numeroAsistentes: 51, porcentajeEdificio: 50.0));
     }
 
     // ── Pruebas de Solapamiento (F6) ─────────────────────────────────────────
@@ -124,6 +124,6 @@ public class PoliticaReservaTests
         );
 
         Assert.Throws<ExcepcionConflictoReserva>(() => 
-            PoliticaReserva.VerificarDisponibilidad(espacio, franjaNueva, new[] { reservaAnterior }));
+            PoliticaReserva.VerificarDisponibilidad(espacio.CodigoEspacio, franjaNueva, existeSolapamiento: true));
     }
 }
