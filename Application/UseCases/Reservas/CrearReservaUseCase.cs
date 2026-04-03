@@ -32,7 +32,7 @@ public class CrearReservaUseCase(
         var franja = new FranjaHoraria(request.Inicio, request.Fin);
 
         // 2. Obtener el porcentaje de ocupación dinámico del edificio
-        var porcentajeOcupacion = await aforoService.GetPorcentajeAsync();
+        var porcentajeOcupacion = await aforoService.GetPorcentajeActualAsync();
 
         // ── Inicio de Transacción ACID ────────────────────────────────────────
         await uow.BeginTransactionAsync();
