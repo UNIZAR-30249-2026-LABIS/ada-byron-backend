@@ -59,7 +59,7 @@ public class CrearReservaUseCaseTests
         
         _personasMock.Setup(p => p.GetByEmailAsync("docente@unizar.es")).ReturnsAsync(persona);
         _espaciosMock.Setup(e => e.GetByCodigoAsync("A-01")).ReturnsAsync(espacio);
-        _aforoMock.Setup(a => a.GetPorcentajeAsync()).ReturnsAsync(100.0);
+        _aforoMock.Setup(a => a.GetPorcentajeActualAsync()).ReturnsAsync(100.0);
         _reservasMock.Setup(r => r.GetByEspacioAsync("A-01")).ReturnsAsync(new List<Reserva>());
 
         var req = new CrearReservaRequestDTO(

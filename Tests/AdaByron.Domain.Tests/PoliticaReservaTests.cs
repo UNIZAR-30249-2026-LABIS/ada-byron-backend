@@ -106,6 +106,89 @@ public class PoliticaReservaTests
             PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio, numeroAsistentes: 51, porcentajeEdificio: 50.0));
     }
 
+    // ── Casos límite PBI-5: Aforo Dinámico ───────────────────────────────────
+
+    /// <summary>
+    /// Al 100 % cualquier número de asistentes ≤ capacidad máxima debe pasar.
+    /// </summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(50)]
+    [InlineData(100)]
+    public void VerificarAforo_Edificio100PorCiento_PermiteHastaCapacidadMaxima(int asistentes)
+    {
+        // Arrange
+        var espacio = CrearEspacio(TipoEspacio.Aula, aforo: 100);
+
+        // Act & Assert – No debe lanzar excepción
+        PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio,
+            numeroAsistentes: asistentes, porcentajeEdificio: 100.0);
+    }
+
+    /// <summary>
+    /// Al 100 % un asistente por encima de la capacidad máxima debe fallar.
+    /// </summary>
+    [Fact]
+    public void VerificarAforo_Edificio100PorCiento_SuperaCapacidad_LanzaExcepcion()
+    {
+        var espacio = CrearEspacio(TipoEspacio.Aula, aforo: 100);
+
+        Assert.Throws<ExcepcionAforoSuperado>(() =>
+            PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio,
+                numeroAsistentes: 101, porcentajeEdificio: 100.0));
+    }
+
+    /// <summary>
+    /// Al 0 % (edificio cerrado) incluso 1 asistente debe ser rechazado.
+    /// Floor(100 * 0 / 100) = 0 → cualquier asistente > 0 falla.
+    /// </summary>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(50)]
+    [InlineData(100)]
+    public void VerificarAforo_Edificio0PorCiento_RecualquierAsistenteLanzaExcepcion(int asistentes)
+    {
+        // Arrange
+        var espacio = CrearEspacio(TipoEspacio.Aula, aforo: 100);
+
+        // Act & Assert
+        Assert.Throws<ExcepcionAforoSuperado>(() =>
+            PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio,
+                numeroAsistentes: asistentes, porcentajeEdificio: 0.0));
+    }
+
+    /// <summary>
+    /// Frontera exacta: asistentes == capacidadPermitida no debe lanzar.
+    /// </summary>
+    [Theory]
+    [InlineData(100, 50.0, 50)]   // 50% de 100 → límite = 50
+    [InlineData(200, 75.0, 150)]  // 75% de 200 → límite = 150
+    [InlineData(60,  10.0, 6)]    // 10% de 60  → límite = 6
+    public void VerificarAforo_FronteraExacta_NoLanzaExcepcion(int capacidad, double porcentaje, int asistentes)
+    {
+        var espacio = CrearEspacio(TipoEspacio.Aula, aforo: capacidad);
+
+        // Act & Assert – exactamente en el límite: debe pasar
+        PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio,
+            numeroAsistentes: asistentes, porcentajeEdificio: porcentaje);
+    }
+
+    /// <summary>
+    /// Un asistente por encima de la frontera exacta debe lanzar excepción.
+    /// </summary>
+    [Theory]
+    [InlineData(100, 50.0, 51)]   // 50% de 100 → límite = 50; 51 falla
+    [InlineData(200, 75.0, 151)]  // 75% de 200 → límite = 150; 151 falla
+    [InlineData(60,  10.0, 7)]    // 10% de 60  → límite = 6; 7 falla
+    public void VerificarAforo_UnAsistenteSobreFrontera_LanzaExcepcion(int capacidad, double porcentaje, int asistentes)
+    {
+        var espacio = CrearEspacio(TipoEspacio.Aula, aforo: capacidad);
+
+        Assert.Throws<ExcepcionAforoSuperado>(() =>
+            PoliticaReserva.VerificarAforo(espacio.Aforo, espacio.CodigoEspacio,
+                numeroAsistentes: asistentes, porcentajeEdificio: porcentaje));
+    }
+
     // ── Pruebas de Solapamiento (F6) ─────────────────────────────────────────
 
     [Fact]
