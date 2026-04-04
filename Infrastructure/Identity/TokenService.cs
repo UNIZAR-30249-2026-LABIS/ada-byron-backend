@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AdaByron.Application.Ports.Out;
-using AdaByron.Domain.Entities;
+using AdaByron.Domain.Aggregates.PersonAggregate; using AdaByron.Domain.Aggregates.SpaceAggregate; using AdaByron.Domain.Aggregates.ReservationAggregate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -25,7 +25,7 @@ public class TokenService(IConfiguration config) : ITokenService
             new Claim(ClaimTypes.Email,  persona.Email),
             new Claim(ClaimTypes.Role,   persona.Rol.ToString()),
             new Claim(ClaimTypes.Name,   persona.NombreCompleto),
-            new Claim("departamento",    persona.Departamento ?? string.Empty),
+            new Claim("departamento",    persona.Departamento.Nombre),
         };
 
         var expiracionHoras = int.TryParse(config["Jwt:ExpirationHours"], out var h) ? h : 8;

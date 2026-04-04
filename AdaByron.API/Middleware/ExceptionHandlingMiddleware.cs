@@ -16,7 +16,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         }
         catch (ExcepcionPermisos ex)
         {
-            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.Forbidden);
+            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.Conflict);
         }
         catch (ExcepcionConflictoReserva ex)
         {
@@ -24,15 +24,12 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         }
         catch (ExcepcionAforoSuperado ex)
         {
-            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.UnprocessableEntity);
-        }
-        catch (ExcepcionCambioCategoria ex)
-        {
-            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.UnprocessableEntity);
+            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.Conflict);
         }
         catch (ExcepcionDominio ex)
         {
-            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.BadRequest);
+            // Cualquier rechazo de regla de negocio es un conflicto con el estado actual
+            await EscribirProblema(context, ex.Message, (int)HttpStatusCode.Conflict);
         }
         catch (ArgumentException ex)
         {
@@ -61,10 +58,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
 
     private static string DescripcionEstado(int status) => status switch
     {
-        400 => "Solicitud incorrecta",
-        403 => "Sin permiso",
-        409 => "Conflicto de reserva",
+        400 => "Error de sintaxis o formato",
+        403 => "Acceso prohibido",
+        409 => "Conflicto con regla de negocio (Dominio)",
         422 => "Entidad no procesable",
-        _   => "Error"
+        _   => "Error interno"
     };
 }

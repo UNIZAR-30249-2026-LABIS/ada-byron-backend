@@ -1,10 +1,10 @@
-using AdaByron.Domain.Entities;
+using AdaByron.Domain.Aggregates.PersonAggregate;
 
 namespace AdaByron.Domain.Interfaces;
 
-// Contrato de repositorio para Persona.
 public interface IPersonaRepository
 {
     Task<Persona?> GetByEmailAsync(string email);
+    Task<IEnumerable<Persona>> GetAllAsync();
     Task AddAsync(Persona persona);
 }

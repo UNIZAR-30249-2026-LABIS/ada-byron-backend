@@ -1,4 +1,4 @@
-using AdaByron.Domain.Entities;
+using AdaByron.Domain.Aggregates.PersonAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,13 +24,20 @@ public class ConfiguracionPersona : IEntityTypeConfiguration<Persona>
                .HasMaxLength(150)
                .IsRequired();
 
-        // El enum se persiste como string para legibilidad en la BD
+        // El enum Rol se persiste como string para legibilidad en la BD
         builder.Property(p => p.Rol)
                .HasConversion<string>()
                .HasMaxLength(30)
                .IsRequired();
 
-        builder.Property(p => p.Departamento)
-               .HasMaxLength(150);
+        // ── ValueObject Departamento ──────────────────────────────────────────
+        // Mapeo como Owned Type forzando el nombre exacto de la columna en BD ("Departamento").
+        builder.OwnsOne(p => p.Departamento, d =>
+        {
+            d.Property(x => x.Nombre)
+             .HasColumnName("Departamento")
+             .HasMaxLength(150)
+             .IsRequired(false);
+        });
     }
 }

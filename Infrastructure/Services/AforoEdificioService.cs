@@ -24,12 +24,11 @@ public sealed class AforoEdificioService : IAforoEdificioService
 
     public AforoEdificioService(IConfiguration configuration)
     {
-        // Lee AforoEdificio:PorcentajeInicial de appsettings.json; fallback a DefaultPorcentaje
-        var valorConfig = configuration.GetValue<double?>("AforoEdificio:PorcentajeInicial");
-        var inicial = valorConfig ?? DefaultPorcentaje;
+        var configRaw = configuration["AforoEdificio:PorcentajeInicial"];
+        var inicial   = double.TryParse(configRaw, out var val) ? val : DefaultPorcentaje;
 
         // Validación defensiva: si el valor configurado está fuera de rango usamos el default
-        if (inicial is < 10.0 or > 100.0)
+        if (inicial < 10.0 || inicial > 100.0)
             inicial = DefaultPorcentaje;
 
         _porcentajeBits = BitConverter.DoubleToInt64Bits(inicial);

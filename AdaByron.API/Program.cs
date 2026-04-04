@@ -26,7 +26,10 @@ builder.Services.AddSwaggerGen(c =>
     
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 // ── Autenticación JWT ─────────────────────────────────────────────────────────
@@ -71,11 +74,14 @@ var app = builder.Build();
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// HABILITADO PARA TODOS LOS ENTORNOS (incluyendo Production) para el prototipo.
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ada Byron API v1");
+    // Al dejar RoutePrefix vacío, SwaggerUI abre en la raíz (http://localhost:5000/)
+    c.RoutePrefix = string.Empty; 
+});
 
 app.UseHttpsRedirection();
 app.UseCors("Frontend");

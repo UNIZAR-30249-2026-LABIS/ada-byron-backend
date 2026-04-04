@@ -1,47 +1,43 @@
-using AdaByron.Domain.Enums;
+namespace AdaByron.Domain.Aggregates.ReservationAggregate;
+
 using AdaByron.Domain.Exceptions;
-using AdaByron.Domain.ValueObjects;
 
-namespace AdaByron.Domain.Entities;
-
-// Reserva de un espacio, identificada por un Guid.
-// Incorpora EstadoReserva (Pendiente → Aceptada | Rechazada) y NumeroAsistentes para la Regla F5.
+/// <summary>
+/// Entidad Reserva (HU-15). Identifica una reserva de un Espacio por una Persona en una Franja.
+/// Es gestionada como entidad dentro del Agregado Space (Aggregate Root).
+/// </summary>
 public sealed class Reserva
 {
     public Guid           Id                { get; }
-    public string         PersonaId         { get; }       // Email de la persona
-    public string         EspacioId         { get; }       // CodigoEspacio del espacio
-    public FranjaHoraria  Franja            { get; }
-    public int            NumeroAsistentes  { get; }
+    public string         PersonaId         { get; private set; }
+    public string         EspacioId         { get; private set; }
+    public FranjaHoraria  Franja            { get; private set; }
+    public int            NumeroAsistentes  { get; private set; }
     public EstadoReserva  Estado            { get; private set; }
+
+    // Requerido por EF Core (HU-15)
+    private Reserva() { }
 
     public Reserva(string personaId, string espacioId, FranjaHoraria franja, int numeroAsistentes)
     {
         if (string.IsNullOrWhiteSpace(personaId))
-            throw new ExcepcionDominio("El identificador de persona (email) no puede estar vacío.");
+            throw new ExcepcionDominio("El identificador de persona no puede estar vacío.");
 
         if (string.IsNullOrWhiteSpace(espacioId))
             throw new ExcepcionDominio("El identificador de espacio no puede estar vacío.");
 
         if (numeroAsistentes <= 0)
-            throw new ExcepcionDominio("El número de asistentes debe ser mayor que cero.");
+            throw new ExcepcionDominio("El número de asistentes debe ser positivo.");
 
         Id               = Guid.NewGuid();
         PersonaId        = personaId.Trim().ToLowerInvariant();
         EspacioId        = espacioId.Trim().ToUpperInvariant();
-        Franja           = franja ?? throw new ExcepcionDominio("La franja horaria no puede ser nula.");
+        Franja           = franja ?? throw new ExcepcionDominio("La franja horaria es obligatoria.");
         NumeroAsistentes = numeroAsistentes;
         Estado           = EstadoReserva.Pendiente;
     }
 
-    private Reserva() 
-    { 
-        PersonaId = null!;
-        EspacioId = null!;
-        Franja    = null!;
-    }
-
-    // Constructor para reconstituir desde BD (sin reejecutar invariantes)
+    // Constructor para reconstituir desde persistencia
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,
                     int numeroAsistentes, EstadoReserva estado)
     {
@@ -57,15 +53,10 @@ public sealed class Reserva
                                        FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado)
         => new(id, personaId, espacioId, franja, numeroAsistentes, estado);
 
-    // Retro-compatibilidad: reconstituir sin asistentes ni estado (para migraciones)
-    public static Reserva Reconstituir(Guid id, string personaId, string espacioId, FranjaHoraria franja)
-        => new(id, personaId, espacioId, franja, 1, EstadoReserva.Aceptada);
-
-    // ── Ciclo de vida ──────────────────────────────────────────────────────────
     public void Aceptar()
     {
         if (Estado != EstadoReserva.Pendiente)
-            throw new ExcepcionDominio($"Solo se puede aceptar una reserva en estado Pendiente. Estado actual: {Estado}.");
+            throw new ExcepcionDominio($"Solo se puede aceptar una reserva en estado Pendiente (Actual: {Estado}).");
         Estado = EstadoReserva.Aceptada;
     }
 
@@ -78,5 +69,4 @@ public sealed class Reserva
 
     public override bool Equals(object? obj) => obj is Reserva otra && Id == otra.Id;
     public override int GetHashCode()        => Id.GetHashCode();
-    public override string ToString()        => $"Reserva({Id}, Espacio={EspacioId}, {Franja}, {Estado})";
 }

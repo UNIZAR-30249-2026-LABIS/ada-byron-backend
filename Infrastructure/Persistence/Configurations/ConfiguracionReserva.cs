@@ -1,5 +1,6 @@
-using AdaByron.Domain.Entities;
-using AdaByron.Domain.Enums;
+using AdaByron.Domain.Aggregates.PersonAggregate;
+using AdaByron.Domain.Aggregates.SpaceAggregate;
+using AdaByron.Domain.Aggregates.ReservationAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,14 +27,14 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
 
         // Estado persiste como string para legibilidad en la BD
         builder.Property(r => r.Estado)
-               .HasConversion(
-                   e => e.ToString(),
-                   s => Enum.Parse<EstadoReserva>(s))
+               .HasConversion<string>()
                .HasColumnName("estado")
                .HasMaxLength(20)
                .IsRequired();
 
-        // ValueObject FranjaHoraria: dos columnas dentro de la misma tabla
+        // ── ValueObject FranjaHoraria → OwnsOne ───────────────────────────────
+        // FranjaHoraria tiene 2 campos (Inicio, Fin) → OwnsOne es la opción correcta.
+        // EF Core mapeará las columnas "inicio" y "fin" dentro de la tabla "reservas".
         builder.OwnsOne(r => r.Franja, fb =>
         {
             fb.Property(f => f.Inicio)
@@ -45,14 +46,15 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
               .IsRequired();
         });
 
-        // FK hacia Persona y Espacio (sin propiedad de navegación en la entidad)
+        // FK hacia Persona (sin navegación en la entidad agregada)
         builder.HasOne<Persona>()
                .WithMany()
                .HasForeignKey(r => r.PersonaId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        // FK hacia Espacio (Aggregate Root tiene una colección Reservas)
         builder.HasOne<Espacio>()
-               .WithMany()
+               .WithMany(e => e.Reservas)
                .HasForeignKey(r => r.EspacioId)
                .OnDelete(DeleteBehavior.Restrict);
     }

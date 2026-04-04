@@ -1,11 +1,11 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.Ports.Out;
 using AdaByron.Application.UseCases.Reservas;
-using AdaByron.Domain.Entities;
-using AdaByron.Domain.Enums;
+using AdaByron.Domain.Aggregates.PersonAggregate;
+using AdaByron.Domain.Aggregates.SpaceAggregate;
+using AdaByron.Domain.Aggregates.ReservationAggregate;
 using AdaByron.Domain.Exceptions;
 using AdaByron.Domain.Interfaces;
-using AdaByron.Domain.ValueObjects;
 using Moq;
 using Xunit;
 
@@ -36,7 +36,7 @@ public class CrearReservaUseCaseTests
     public async Task ExecuteAsync_EspacioNoExiste_LanzaExcepcionDominio()
     {
         _personasMock.Setup(p => p.GetByEmailAsync("test@unizar.es"))
-            .ReturnsAsync(new Persona("test@unizar.es", "Test", "User", Rol.Docente, "Informatica"));
+            .ReturnsAsync(new Persona("test@unizar.es", "Test", "User", Rol.Docente, new Departamento("Informatica")));
         
         _espaciosMock.Setup(e => e.GetByCodigoAsync("A-01")).ReturnsAsync((Espacio)null!);
 
@@ -44,8 +44,8 @@ public class CrearReservaUseCaseTests
             Email: "test@unizar.es",
             CodigoEspacio: "A-01",
             NumeroAsistentes: 10,
-            Inicio: DateTime.Now,
-            Fin: DateTime.Now.AddHours(1)
+            Inicio: DateTime.Now.AddHours(1),
+            Fin: DateTime.Now.AddHours(2)
         );
 
         await Assert.ThrowsAsync<ExcepcionDominio>(() => _useCase.ExecuteAsync(req));
@@ -54,7 +54,7 @@ public class CrearReservaUseCaseTests
     [Fact]
     public async Task ExecuteAsync_HappyPath_GeneraCommitYToken()
     {
-        var persona = new Persona("docente@unizar.es", "Juan", "Perez", Rol.Docente, "Informatica");
+        var persona = new Persona("docente@unizar.es", "Juan", "Perez", Rol.Docente, new Departamento("Informatica"));
         var espacio = new Espacio("A-01", "Aula", Planta.De(1), Aforo.De(50), TipoEspacio.Aula, null);
         
         _personasMock.Setup(p => p.GetByEmailAsync("docente@unizar.es")).ReturnsAsync(persona);

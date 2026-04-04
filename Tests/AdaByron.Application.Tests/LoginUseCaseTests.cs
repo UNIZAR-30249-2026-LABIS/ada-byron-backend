@@ -1,8 +1,8 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.Ports.Out;
 using AdaByron.Application.UseCases.Auth;
-using AdaByron.Domain.Entities;
-using AdaByron.Domain.Enums;
+using AdaByron.Domain.Aggregates.PersonAggregate; using AdaByron.Domain.Aggregates.SpaceAggregate; using AdaByron.Domain.Aggregates.ReservationAggregate;
+using AdaByron.Domain.Aggregates.PersonAggregate; using AdaByron.Domain.Aggregates.SpaceAggregate; using AdaByron.Domain.Aggregates.ReservationAggregate;
 using AdaByron.Domain.Exceptions;
 using AdaByron.Domain.Interfaces;
 using Moq;

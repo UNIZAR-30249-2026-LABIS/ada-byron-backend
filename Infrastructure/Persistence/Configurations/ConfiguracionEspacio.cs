@@ -1,5 +1,5 @@
-using AdaByron.Domain.Entities;
-using AdaByron.Domain.ValueObjects;
+using AdaByron.Domain.Aggregates.PersonAggregate;
+using AdaByron.Domain.Aggregates.SpaceAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetTopologySuite.Geometries;
@@ -22,7 +22,7 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasMaxLength(200)
                .IsRequired();
 
-        // ValueObject Planta (int inmutable): se persiste solo su valor entero
+        // ── ValueObject Planta → int ──────────────────────────────────────────
         builder.Property(e => e.Planta)
                .HasConversion(
                    p => p.Valor,
@@ -30,7 +30,7 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasColumnName("planta")
                .IsRequired();
 
-        // ValueObject Aforo (int inmutable): se persiste solo su valor entero
+        // ── ValueObject Aforo → int ───────────────────────────────────────────
         builder.Property(e => e.Aforo)
                .HasConversion(
                    a => a.Valor,
@@ -49,13 +49,17 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasMaxLength(30)
                .IsRequired();
 
-        // El departamento es opcional (solo se usa en laboratorios)
-        builder.Property(e => e.Departamento)
-               .HasMaxLength(150)
-               .IsRequired(false);
+        // ── ValueObject Departamento → string ─────────────────────────────────
+        // Mapeo como Owned Type forzando el nombre de columna en BD.
+        builder.OwnsOne(e => e.Departamento, d =>
+        {
+            d.Property(x => x.Nombre)
+             .HasColumnName("Departamento")
+             .HasMaxLength(150)
+             .IsRequired(false);
+        });
 
         // Ubicación geoespacial PostGIS (shadow property — no contamina el Dominio)
-        // Accesible desde repositorio via: entry.Property<Point>("Ubicacion")
         builder.Property<Point>("Ubicacion")
                .HasColumnType("geometry(Point,4326)")
                .HasColumnName("ubicacion")

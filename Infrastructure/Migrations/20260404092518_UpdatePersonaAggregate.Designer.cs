@@ -3,6 +3,7 @@ using System;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AdaByron.Infrastructure.Migrations
 {
     [DbContext(typeof(AplicacionDbContext))]
-    partial class AplicacionDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404092518_UpdatePersonaAggregate")]
+    partial class UpdatePersonaAggregate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,6 +59,9 @@ namespace AdaByron.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("EspacioCodigoEspacio")
+                        .HasColumnType("character varying(20)");
+
                     b.Property<string>("EspacioId")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -76,6 +82,8 @@ namespace AdaByron.Infrastructure.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EspacioCodigoEspacio");
 
                     b.HasIndex("EspacioId");
 
@@ -150,6 +158,10 @@ namespace AdaByron.Infrastructure.Migrations
                 {
                     b.HasOne("AdaByron.Domain.Aggregates.SpaceAggregate.Espacio", null)
                         .WithMany("Reservas")
+                        .HasForeignKey("EspacioCodigoEspacio");
+
+                    b.HasOne("AdaByron.Domain.Aggregates.SpaceAggregate.Espacio", null)
+                        .WithMany()
                         .HasForeignKey("EspacioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

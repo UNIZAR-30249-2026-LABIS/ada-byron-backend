@@ -1,4 +1,4 @@
-using AdaByron.Domain.Entities;
+using AdaByron.Domain.Aggregates.PersonAggregate; using AdaByron.Domain.Aggregates.SpaceAggregate; using AdaByron.Domain.Aggregates.ReservationAggregate;
 
 namespace AdaByron.Application.Ports.Out;
 
