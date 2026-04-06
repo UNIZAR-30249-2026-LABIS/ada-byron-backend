@@ -64,5 +64,14 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasColumnType("geometry(Point,4326)")
                .HasColumnName("ubicacion")
                .IsRequired(false);
+
+        // ── Relaciones ───────────────────────────────────────────────────────
+        // EF Core mapeará automáticamente a la colección privada _reservas
+        builder.HasMany(e => e.Reservas)
+               .WithOne()
+               .HasForeignKey(r => r.EspacioId);
+        
+        builder.Metadata.FindNavigation(nameof(Espacio.Reservas))?
+               .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

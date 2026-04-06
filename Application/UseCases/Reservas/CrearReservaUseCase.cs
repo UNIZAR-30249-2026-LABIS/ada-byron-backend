@@ -25,29 +25,21 @@ public class CrearReservaUseCase(
         var persona = await personas.GetByEmailAsync(request.Email)
             ?? throw new ExcepcionUsuarioNoRegistrado(request.Email);
 
-        var espacio = await espacios.GetByCodigoAsync(request.CodigoEspacio)
-            ?? throw new ExcepcionDominio($"Espacio '{request.CodigoEspacio}' no encontrado.");
-
         var franja = new FranjaHoraria(request.Inicio, request.Fin);
         var configEdificio = await configRepo.GetConfigAsync() 
                              ?? new EdificioConfig("AdaByron", 100); // 100% por defecto si no hay nada en BD
 
         // ── Inicio de Transacción ACID ────────────────────────────────────────
-        await uow.BeginTransactionAsync();
+        await uow.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted);
         try
         {
             // Bloqueo consultivo para evitar concurrencia en el mismo espacio (HU-T2)
             await uow.AcquireEspacioLockAsync(request.CodigoEspacio);
 
-            // Re-hidratación de las reservas actuales para que el AR pueda validar invariantes (solapamiento)
-            var reservasExistentes = await reservas.GetByEspacioAsync(request.CodigoEspacio);
-            // Inyección de dependencias manual al AR (si fuese necesario, aquí hidratamos la colección privada)
-            // Para simplificar esta iteración y mantener compatibilidad con el repositorio actual:
-            foreach(var r in reservasExistentes) 
-            {
-               // Lógica simplificada: en un sistema real, el repo cargaría espacio.Reservas automáticamente
-               // Aquí usamos el método de conveniencia del AR para validar las reglas consolidadas.
-            }
+            // Se debe cargar o recargar el Agregado DESPUÉS de adquirir el Lock 
+            // para que un hilo vea los check-ins/commits realizados por hilos anteriores que soltaron su Lock
+            var espacio = await espacios.GetByCodigoAsync(request.CodigoEspacio)
+                ?? throw new ExcepcionDominio($"Espacio '{request.CodigoEspacio}' no encontrado.");
 
             // 2. Crear objeto de intención
             var nuevaReserva = new Reserva(

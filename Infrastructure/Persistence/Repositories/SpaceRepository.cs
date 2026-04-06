@@ -9,7 +9,9 @@ namespace AdaByron.Infrastructure.Persistence.Repositories;
 public class EspacioRepository(AplicacionDbContext context) : IEspacioRepository
 {
     public async Task<Espacio?> GetByCodigoAsync(string codigo)
-        => await context.Espacios.FindAsync(codigo);
+        => await context.Espacios
+            .Include(e => e.Reservas)
+            .FirstOrDefaultAsync(e => e.CodigoEspacio == codigo);
 
     public async Task<IEnumerable<Espacio>> GetAllAsync()
         => await context.Espacios.ToListAsync();
