@@ -22,7 +22,6 @@ public sealed class Espacio
 
     public IReadOnlyCollection<Reserva> Reservas => _reservas.AsReadOnly();
 
-    // Requerido por EF Core — no invocar desde dominio
     private Espacio() { }
 
     public Espacio(string codigoEspacio, string nombre, Planta planta, Aforo aforo, TipoEspacio tipoFisico, Departamento? departamento = null)
@@ -41,7 +40,7 @@ public sealed class Espacio
 
     // ── Gestión de Reservas (Espacio como Aggregate Root) ───────────────────
 
-    public void AddReserva(Reserva reserva, double porcentajeEdificioActual, Persona persona)
+    public void AddReserva(Reserva reserva, EdificioConfig configEdificio, Persona persona)
     {
         // 1. Verificar Permisos (HU-13)
         VerificarPermisos(persona);
@@ -52,10 +51,10 @@ public sealed class Espacio
 
         // 3. Verificar aforo dinámico (Regla F5 / HU-14)
         var edificio = Edificio.AdaByron;
-        int maximoPermitido = edificio.CalcularCapacidadPermitida(Aforo.Valor, porcentajeEdificioActual);
+        int maximoPermitido = edificio.CalcularCapacidadPermitida(Aforo.Valor, configEdificio.PorcentajeOcupacion);
         
         if (reserva.NumeroAsistentes > maximoPermitido)
-            throw new ExcepcionAforoSuperado($"Aforo superado. Máximo permitido: {maximoPermitido} ({porcentajeEdificioActual}% de {Aforo.Valor}).");
+            throw new ExcepcionAforoSuperado($"Aforo superado. Máximo permitido: {maximoPermitido} ({configEdificio.PorcentajeOcupacion}% de {Aforo.Valor}).");
 
         _reservas.Add(reserva);
     }

@@ -17,7 +17,7 @@ public class CrearReservaUseCase(
     IEspacioRepository     espacios,
     IReservaRepository     reservas,
     IUnitOfWork            uow,
-    IAforoEdificioService  aforoService)
+    IEdificioConfigRepository configRepo)
 {
     public async Task<ReservaResponseDTO> ExecuteAsync(CrearReservaRequestDTO request)
     {
@@ -29,7 +29,8 @@ public class CrearReservaUseCase(
             ?? throw new ExcepcionDominio($"Espacio '{request.CodigoEspacio}' no encontrado.");
 
         var franja = new FranjaHoraria(request.Inicio, request.Fin);
-        var porcentajeOcupacion = await aforoService.GetPorcentajeActualAsync();
+        var configEdificio = await configRepo.GetConfigAsync() 
+                             ?? new EdificioConfig("AdaByron", 100); // 100% por defecto si no hay nada en BD
 
         // ── Inicio de Transacción ACID ────────────────────────────────────────
         await uow.BeginTransactionAsync();
@@ -58,7 +59,7 @@ public class CrearReservaUseCase(
             // 3. El AR gestiona la creación y valida todas las Reglas F (HU-13, 14, 15)
             // Se le pasan las reservas existentes para la validación horaria local.
             // Para esta iteración, el AR valida internamente con su lógica encapsulada.
-            espacio.AddReserva(nuevaReserva, porcentajeOcupacion, persona);
+            espacio.AddReserva(nuevaReserva, configEdificio, persona);
 
             // Si pasa las reglas, autoconfírmamos (según flujo actual)
             nuevaReserva.Aceptar();

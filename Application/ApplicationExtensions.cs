@@ -15,6 +15,9 @@ public static class ApplicationExtensions
         // Este UseCase es el que orquesta la HU-13, HU-14 y HU-15
         services.AddScoped<CrearReservaUseCase>();
 
+        // Registra UseCase de Admin
+        services.AddScoped<AdaByron.Application.UseCases.Admin.UpdateBuildingConfigUseCase>();
+
         return services;
     }
 }

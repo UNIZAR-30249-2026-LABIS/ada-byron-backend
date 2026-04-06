@@ -4,7 +4,6 @@ using AdaByron.Infrastructure.Identity;
 using AdaByron.Infrastructure.Persistence;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using AdaByron.Infrastructure.Persistence.Repositories;
-using AdaByron.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,8 +37,8 @@ public static class InfrastructureExtensions
         // Servicios externos (puertos de salida)
         services.AddScoped<ITokenService, TokenService>();
 
-        // Servicio Aforo dinámico del edificio: singleton para mantener el estado entre peticiones
-        services.AddSingleton<IAforoEdificioService, AforoEdificioService>();
+        // Repositorio de Configuración del Edificio (Aforo PBI-5/6)
+        services.AddScoped<IEdificioConfigRepository, EdificioConfigRepository>();
 
         return services;
     }

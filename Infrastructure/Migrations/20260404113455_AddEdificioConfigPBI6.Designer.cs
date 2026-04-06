@@ -3,6 +3,7 @@ using System;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AdaByron.Infrastructure.Migrations
 {
     [DbContext(typeof(AplicacionDbContext))]
-    partial class AplicacionDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404113455_AddEdificioConfigPBI6")]
+    partial class AddEdificioConfigPBI6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,6 +98,13 @@ namespace AdaByron.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("edificio_config", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "AdaByron",
+                            PorcentajeOcupacion = 100.0
+                        });
                 });
 
             modelBuilder.Entity("AdaByron.Domain.Aggregates.SpaceAggregate.Espacio", b =>
@@ -111,6 +121,9 @@ namespace AdaByron.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
+
+                    b.Property<string>("EdificioConfigId")
+                        .HasColumnType("text");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -131,6 +144,8 @@ namespace AdaByron.Infrastructure.Migrations
                         .HasColumnName("ubicacion");
 
                     b.HasKey("CodigoEspacio");
+
+                    b.HasIndex("EdificioConfigId");
 
                     b.ToTable("espacios", (string)null);
                 });
@@ -200,6 +215,10 @@ namespace AdaByron.Infrastructure.Migrations
 
             modelBuilder.Entity("AdaByron.Domain.Aggregates.SpaceAggregate.Espacio", b =>
                 {
+                    b.HasOne("AdaByron.Domain.Aggregates.SpaceAggregate.EdificioConfig", "EdificioConfig")
+                        .WithMany()
+                        .HasForeignKey("EdificioConfigId");
+
                     b.OwnsOne("AdaByron.Domain.Aggregates.PersonAggregate.Departamento", "Departamento", b1 =>
                         {
                             b1.Property<string>("EspacioCodigoEspacio")
@@ -220,6 +239,8 @@ namespace AdaByron.Infrastructure.Migrations
 
                     b.Navigation("Departamento")
                         .IsRequired();
+
+                    b.Navigation("EdificioConfig");
                 });
 
             modelBuilder.Entity("AdaByron.Domain.Aggregates.SpaceAggregate.Espacio", b =>

@@ -7,7 +7,8 @@ public class AplicacionDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     public DbSet<Persona> Personas => Set<Persona>();
     public DbSet<Espacio> Espacios => Set<Espacio>();
-    public DbSet<Reserva>  Reservas  => Set<Reserva>();
+    public DbSet<Reserva> Reservas => Set<Reserva>();
+    public DbSet<EdificioConfig> EdificioConfigs => Set<EdificioConfig>();
 
     public AplicacionDbContext(DbContextOptions<AplicacionDbContext> options) : base(options) { }
 

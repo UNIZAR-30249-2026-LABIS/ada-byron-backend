@@ -17,7 +17,7 @@ public class CrearReservaUseCaseTests
     private readonly Mock<IEspacioRepository> _espaciosMock = new();
     private readonly Mock<IReservaRepository> _reservasMock = new();
     private readonly Mock<IUnitOfWork> _uowMock = new();
-    private readonly Mock<IAforoEdificioService> _aforoMock = new();
+    private readonly Mock<IEdificioConfigRepository> _configMock = new();
 
     private readonly CrearReservaUseCase _useCase;
 
@@ -28,7 +28,7 @@ public class CrearReservaUseCaseTests
             _espaciosMock.Object,
             _reservasMock.Object,
             _uowMock.Object,
-            _aforoMock.Object
+            _configMock.Object
         );
     }
 
@@ -59,7 +59,7 @@ public class CrearReservaUseCaseTests
         
         _personasMock.Setup(p => p.GetByEmailAsync("docente@unizar.es")).ReturnsAsync(persona);
         _espaciosMock.Setup(e => e.GetByCodigoAsync("A-01")).ReturnsAsync(espacio);
-        _aforoMock.Setup(a => a.GetPorcentajeActualAsync()).ReturnsAsync(100.0);
+        _configMock.Setup(a => a.GetConfigAsync()).ReturnsAsync(new EdificioConfig("AdaByron", 100.0));
         _reservasMock.Setup(r => r.GetByEspacioAsync("A-01")).ReturnsAsync(new List<Reserva>());
 
         var req = new CrearReservaRequestDTO(

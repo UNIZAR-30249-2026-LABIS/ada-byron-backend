@@ -51,7 +51,7 @@ public class EspacioTests
         var reserva    = CrearReservaDeIntento(salaComun, 5);
         
         // Act & Assert: No debe lanzar excepción
-        salaComun.AddReserva(reserva, 100.0, estudiante);
+        salaComun.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), estudiante);
         Assert.Single(salaComun.Reservas);
     }
 
@@ -63,7 +63,7 @@ public class EspacioTests
         var reserva    = CrearReservaDeIntento(aula, 5);
 
         Assert.Throws<ExcepcionPermisos>(() => 
-            aula.AddReserva(reserva, 100.0, estudiante));
+            aula.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), estudiante));
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class EspacioTests
         var lab     = CrearEspacio(TipoEspacio.Laboratorio, 20, "Informatica");
         var reserva = CrearReservaDeIntento(lab, 5);
 
-        lab.AddReserva(reserva, 100.0, tecnico);
+        lab.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), tecnico);
         Assert.Single(lab.Reservas);
     }
 
@@ -85,7 +85,7 @@ public class EspacioTests
         var reserva = CrearReservaDeIntento(lab, 5);
 
         Assert.Throws<ExcepcionPermisos>(() => 
-            lab.AddReserva(reserva, 100.0, tecnico));
+            lab.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), tecnico));
     }
 
     // ── Pruebas de Aforo (F5 / HU-14 / PBI-5) ────────────────────────────────
@@ -100,7 +100,7 @@ public class EspacioTests
         var aula    = CrearEspacio(TipoEspacio.Aula, capacidad, "Informatica");
         var reserva = CrearReservaDeIntento(aula, asistentes);
 
-        aula.AddReserva(reserva, porcentaje, docente);
+        aula.AddReserva(reserva, new EdificioConfig("AdaByron", porcentaje), docente);
         Assert.Single(aula.Reservas);
     }
 
@@ -115,7 +115,7 @@ public class EspacioTests
         var reserva = CrearReservaDeIntento(aula, asistentes);
 
         Assert.Throws<ExcepcionAforoSuperado>(() => 
-            aula.AddReserva(reserva, porcentaje, docente));
+            aula.AddReserva(reserva, new EdificioConfig("AdaByron", porcentaje), docente));
     }
 
     // ── Pruebas de Disponibilidad (F6 / HU-15) ───────────────────────────────
@@ -137,7 +137,7 @@ public class EspacioTests
         // Simulamos hidratación del AR (en un repo real esto vendría cargado)
         // Usamos reflexión o un método de prueba si la lista es privada, 
         // pero aquí el método AddReserva ya la añade.
-        aula.AddReserva(r1, 100.0, docente); 
+        aula.AddReserva(r1, new EdificioConfig("AdaByron", 100.0), docente); 
 
         // Segunda reserva solapada (15:00 - 17:00)
         var franja2 = new FranjaHoraria(inicio.AddHours(1), fin.AddHours(1));
@@ -145,6 +145,6 @@ public class EspacioTests
 
         // Act & Assert
         Assert.Throws<ExcepcionConflictoReserva>(() => 
-            aula.AddReserva(r2, 100.0, docente));
+            aula.AddReserva(r2, new EdificioConfig("AdaByron", 100.0), docente));
     }
 }
