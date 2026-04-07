@@ -76,7 +76,7 @@ public class CrearReservaUseCaseTests
         Assert.Equal(EstadoReserva.Aceptada.ToString(), response.Estado);
 
         // Verifica que se haya guardado y commiteado en la BD
-        _uowMock.Verify(u => u.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead), Times.Once);
+        _uowMock.Verify(u => u.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted), Times.Once);
         _uowMock.Verify(u => u.AcquireEspacioLockAsync("A-01"), Times.Once);
         _reservasMock.Verify(r => r.AddAsync(It.IsAny<Reserva>()), Times.Once);
         _uowMock.Verify(u => u.CommitAsync(), Times.Once);
