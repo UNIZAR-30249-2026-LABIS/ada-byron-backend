@@ -22,7 +22,8 @@ public static class ApplicationExtensions
         // Registra UseCases de Espacios
         services.AddScoped<GetFilteredSpacesUseCase>();
         services.AddScoped<AdaByron.Application.UseCases.Reservations.GetLiveReservationsUseCase>();
-
+        services.AddScoped<AdaByron.Application.UseCases.Reservations.DeleteReservationUseCase>();
+        
         return services;
     }
 }

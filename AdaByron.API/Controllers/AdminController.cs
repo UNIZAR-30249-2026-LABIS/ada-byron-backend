@@ -43,4 +43,23 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
         var result = await getLiveReservationsUseCase.ExecuteAsync();
         return Ok(result);
     }
+
+    /// <summary>
+    /// Elimina una reserva del sistema y notifica al usuario (HU-18).
+    /// </summary>
+    [HttpDelete("reservations/{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteReservation(Guid id, [FromServices] AdaByron.Application.UseCases.Reservations.DeleteReservationUseCase deleteUseCase)
+    {
+        try
+        {
+            await deleteUseCase.ExecuteAsync(id);
+            return NoContent();
+        }
+        catch (ExcepcionDominio ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

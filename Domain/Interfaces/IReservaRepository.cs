@@ -8,5 +8,6 @@ public interface IReservaRepository
     Task<IEnumerable<Reserva>> GetByEspacioAsync(string codigoEspacio);
     Task<IEnumerable<Reserva>> GetAllAsync();
     Task AddAsync(Reserva reserva);
+    Task DeleteAsync(Guid id);
     Task<IEnumerable<(Reserva, string NombreEspacio, string NombreUsuario)>> GetLiveWithDetailsAsync();
 }
