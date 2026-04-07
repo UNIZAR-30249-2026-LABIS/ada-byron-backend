@@ -1,5 +1,6 @@
 using AdaByron.Application.UseCases.Auth;
 using AdaByron.Application.UseCases.Reservas;
+using AdaByron.Application.UseCases.Spaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AdaByron.Application;
@@ -17,6 +18,9 @@ public static class ApplicationExtensions
 
         // Registra UseCase de Admin
         services.AddScoped<AdaByron.Application.UseCases.Admin.UpdateBuildingConfigUseCase>();
+
+        // Registra UseCases de Espacios
+        services.AddScoped<GetFilteredSpacesUseCase>();
 
         return services;
     }

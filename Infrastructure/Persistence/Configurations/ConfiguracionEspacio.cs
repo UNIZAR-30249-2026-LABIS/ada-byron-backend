@@ -27,7 +27,7 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasConversion(
                    p => p.Valor,
                    v => Planta.De(v))
-               .HasColumnName("planta")
+               .HasColumnName("altura")
                .IsRequired();
 
         // ── ValueObject Aforo → int ───────────────────────────────────────────
@@ -73,5 +73,9 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
         
         builder.Metadata.FindNavigation(nameof(Espacio.Reservas))?
                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // ── Índices para PostGIS y Búsquedas ─────────────────────────────────
+        builder.HasIndex("Ubicacion").HasMethod("GIST");
+        builder.HasIndex(e => e.Planta);
     }
 }

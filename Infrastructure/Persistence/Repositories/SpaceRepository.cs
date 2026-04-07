@@ -16,6 +16,38 @@ public class EspacioRepository(AplicacionDbContext context) : IEspacioRepository
     public async Task<IEnumerable<Espacio>> GetAllAsync()
         => await context.Espacios.ToListAsync();
 
+    public async Task<IEnumerable<Espacio>> SearchAsync(string? id, string? floor, string? category, int? capacity)
+    {
+        var query = context.Espacios.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(id))
+            query = query.Where(e => e.CodigoEspacio.Contains(id));
+
+        if (!string.IsNullOrWhiteSpace(floor))
+        {
+            int parsedFloor = floor.Equals("S1", StringComparison.OrdinalIgnoreCase) ? -1 : 
+                              int.TryParse(floor, out var f) ? f : int.MinValue;
+            
+            if (parsedFloor != int.MinValue)
+            {
+                var plantaTarget = Planta.De(parsedFloor);
+                query = query.Where(e => e.Planta == plantaTarget);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var parsed = Enum.TryParse<TipoEspacio>(category, true, out var t) ? t : (TipoEspacio?)null;
+            if (parsed.HasValue)
+                query = query.Where(e => e.TipoFisico == parsed.Value || e.CategoriaReserva == parsed.Value);
+        }
+
+        if (capacity.HasValue)
+            query = query.Where(e => e.Aforo.Valor >= capacity.Value);
+
+        return await query.ToListAsync();
+    }
+
     public async Task AddAsync(Espacio espacio)
     {
         await context.Espacios.AddAsync(espacio);
