@@ -32,4 +32,15 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
             return BadRequest(ex.Message);
         }
     }
+
+    /// <summary>
+    /// Lista de reservas activas para la supervisión del administrador (HU-17).
+    /// </summary>
+    [HttpGet("reservations/live")]
+    [ProducesResponseType(typeof(IEnumerable<LiveReservationDTO>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLiveReservations([FromServices] AdaByron.Application.UseCases.Reservations.GetLiveReservationsUseCase getLiveReservationsUseCase)
+    {
+        var result = await getLiveReservationsUseCase.ExecuteAsync();
+        return Ok(result);
+    }
 }
