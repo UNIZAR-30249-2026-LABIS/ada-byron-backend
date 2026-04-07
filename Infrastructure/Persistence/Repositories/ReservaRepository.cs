@@ -23,6 +23,16 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
         await context.Reservas.AddAsync(reserva);
         await context.SaveChangesAsync();
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var reserva = await context.Reservas.FindAsync(id);
+        if (reserva != null)
+        {
+            context.Reservas.Remove(reserva);
+            await context.SaveChangesAsync();
+        }
+    }
     
     public async Task<IEnumerable<(Reserva, string NombreEspacio, string NombreUsuario)>> GetLiveWithDetailsAsync()
     {

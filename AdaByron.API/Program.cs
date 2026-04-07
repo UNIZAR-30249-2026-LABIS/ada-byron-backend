@@ -54,8 +54,14 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ── SignalR ───────────────────────────────────────────────────────────────────
+// ── SignalR (configuración de identificador de usuario) ──────────────────────────
 builder.Services.AddSignalR();
+
+// Re-configuración para que ASP.NET identifique el Claim de Email como el identificador de usuario en los Hubs
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters.NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+});
 
 // ── CORS (desarrollo — Vite dev server) ───────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -91,5 +97,6 @@ app.UseAuthorization();
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 app.MapControllers();
 app.MapHub<ReservasHub>("/hubs/reservations");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
