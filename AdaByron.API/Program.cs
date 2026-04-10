@@ -1,5 +1,6 @@
 using System.Text;
 using AdaByron.API.Hubs;
+using AdaByron.Infrastructure.Realtime;
 using AdaByron.API.Middleware;
 using AdaByron.Application;
 using AdaByron.Infrastructure;

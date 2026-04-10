@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.ReservationAggregate;
 
 using AdaByron.Domain.Exceptions;
@@ -9,15 +10,16 @@ using AdaByron.Domain.Exceptions;
 public sealed class Reserva
 {
     public Guid           Id                { get; }
-    public string         PersonaId         { get; private set; }
-    public string         EspacioId         { get; private set; }
-    public FranjaHoraria  Franja            { get; private set; }
+    public required string PersonaId         { get; init; }
+    public required string EspacioId         { get; init; }
+    public required FranjaHoraria  Franja            { get; init; }
     public int            NumeroAsistentes  { get; private set; }
     public EstadoReserva  Estado            { get; private set; }
 
     // Requerido por EF Core (HU-15)
     private Reserva() { }
 
+    [SetsRequiredMembers]
     public Reserva(string personaId, string espacioId, FranjaHoraria franja, int numeroAsistentes)
     {
         if (string.IsNullOrWhiteSpace(personaId))
@@ -38,6 +40,7 @@ public sealed class Reserva
     }
 
     // Constructor para reconstituir desde persistencia
+    [SetsRequiredMembers]
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,
                     int numeroAsistentes, EstadoReserva estado)
     {

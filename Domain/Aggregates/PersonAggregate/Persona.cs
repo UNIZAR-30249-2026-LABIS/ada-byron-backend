@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.PersonAggregate;
 
 using AdaByron.Domain.Exceptions;
@@ -7,9 +8,9 @@ using AdaByron.Domain.Exceptions;
 /// </summary>
 public sealed class Persona
 {
-    public string       Email        { get; }
-    public string       Nombre       { get; private set; }
-    public string       Apellidos    { get; private set; }
+    public required string Email        { get; init; }
+    public required string Nombre       { get; init; }
+    public required string Apellidos    { get; init; }
     public Rol          Rol          { get; private set; }
 
     private Departamento? _departamento;
@@ -22,6 +23,7 @@ public sealed class Persona
     // Requerido por EF Core — no invocar desde dominio
     private Persona() { }
 
+    [SetsRequiredMembers]
     public Persona(string email, string nombre, string apellidos, Rol rol, Departamento? departamento = null)
     {
         if (string.IsNullOrWhiteSpace(email))
