@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 
 using AdaByron.Domain.Aggregates.ReservationAggregate;
@@ -12,18 +13,19 @@ public sealed class Espacio
 {
     private readonly List<Reserva> _reservas = new();
 
-    public string       CodigoEspacio    { get; }
-    public string       Nombre           { get; private set; }
-    public Planta       Planta           { get; private set; }
-    public Aforo        Aforo            { get; private set; }
+    public required string       CodigoEspacio    { get; init; }
+    public required string       Nombre           { get; init; }
+    public required Planta       Planta           { get; init; }
+    public required Aforo        Aforo            { get; init; }
     public TipoEspacio  TipoFisico       { get; }
     public TipoEspacio  CategoriaReserva { get; private set; }
-    public Departamento Departamento     { get; private set; }
+    public required Departamento Departamento     { get; init; }
 
     public IReadOnlyCollection<Reserva> Reservas => _reservas.AsReadOnly();
 
     private Espacio() { }
 
+    [SetsRequiredMembers]
     public Espacio(string codigoEspacio, string nombre, Planta planta, Aforo aforo, TipoEspacio tipoFisico, Departamento? departamento = null)
     {
         if (string.IsNullOrWhiteSpace(codigoEspacio))
