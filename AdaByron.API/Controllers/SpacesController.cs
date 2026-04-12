@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AdaByron.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/spaces")]
 public class SpacesController(IEspacioRepository espacios) : ControllerBase
 {
     /// <summary>

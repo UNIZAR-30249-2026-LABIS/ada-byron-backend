@@ -23,12 +23,12 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .IsRequired();
 
         // ── ValueObject Planta → int ──────────────────────────────────────────
-        builder.Property(e => e.Planta)
-               .HasConversion(
-                   p => p.Valor,
-                   v => Planta.De(v))
-               .HasColumnName("planta")
-               .IsRequired();
+        builder.OwnsOne(e => e.Planta, p =>
+        {
+            p.Property(x => x.Valor)
+             .HasColumnName("altura") // Coincidimos con el esquema real de BD (PostGIS)
+             .IsRequired();
+        });
 
         // ── ValueObject Aforo → int ───────────────────────────────────────────
         builder.Property(e => e.Aforo)

@@ -38,6 +38,15 @@ public sealed class Espacio
         Departamento      = departamento ?? Departamento.Null;
     }
 
+    public void UpdateDetails(string nombre, Planta planta, Aforo aforo, TipoEspacio categoria)
+    {
+        if (string.IsNullOrWhiteSpace(nombre)) throw new ExcepcionDominio("El nombre no puede estar vacío.");
+        Nombre = nombre.Trim();
+        Planta = planta;
+        Aforo = aforo;
+        CategoriaReserva = categoria;
+    }
+
     // ── Gestión de Reservas (Espacio como Aggregate Root) ───────────────────
 
     public void AddReserva(Reserva reserva, EdificioConfig configEdificio, Persona persona)
