@@ -9,11 +9,7 @@ namespace AdaByron.API.Controllers;
 
 [ApiController]
 [Route("api/spaces")]
-<<<<<<< HEAD
-public class SpacesController(IEspacioRepository espacios) : ControllerBase
-=======
 public class SpacesController(IEspacioRepository espacios, GetFilteredSpacesUseCase getFilteredSpacesUseCase) : ControllerBase
->>>>>>> 2b5c96daeac49700c41e7e0ebb7091bac2fbad55
 {
     /// <summary>
     /// Lista todos los espacios del edificio Ada Byron registrados en el sistema.

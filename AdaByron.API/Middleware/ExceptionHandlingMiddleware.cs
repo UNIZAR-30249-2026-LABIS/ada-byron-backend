@@ -39,6 +39,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         {
             await EscribirProblema(context, ex.Message, (int)HttpStatusCode.NotFound);
         }
+        catch (Exception ex)
+        {
+            await EscribirProblema(context, ex.ToString(), (int)HttpStatusCode.InternalServerError);
+        }
     }
 
     private static async Task EscribirProblema(HttpContext context, string detalle, int status)

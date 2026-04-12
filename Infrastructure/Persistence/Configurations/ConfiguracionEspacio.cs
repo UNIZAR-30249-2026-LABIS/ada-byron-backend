@@ -76,6 +76,5 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
 
         // ── Índices para PostGIS y Búsquedas ─────────────────────────────────
         builder.HasIndex("Ubicacion").HasMethod("GIST");
-        builder.HasIndex(e => e.Planta);
     }
 }

@@ -21,19 +21,10 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 
 // ── API + Swagger ─────────────────────────────────────────────────────────────
-<<<<<<< HEAD
 builder.Services.AddControllers().AddJsonOptions(options => 
 {
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
-=======
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-    });
-
->>>>>>> 2b5c96daeac49700c41e7e0ebb7091bac2fbad55
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -93,6 +84,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
+app.UseDeveloperExceptionPage();
+app.UseCors("Frontend");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // HABILITADO PARA TODOS LOS ENTORNOS (incluyendo Production) para el prototipo.
@@ -105,7 +98,6 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
-app.UseCors("Frontend");
 app.UseAuthentication();   // ← Antes de Authorization
 app.UseAuthorization();
 
