@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 
 /// <summary>
@@ -6,11 +7,12 @@ namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 /// </summary>
 public class EdificioConfig
 {
-    public string Id { get; private set; }
+    public required string Id { get; init; }
     public double PorcentajeOcupacion { get; private set; }
 
     private EdificioConfig() { }
 
+    [SetsRequiredMembers]
     public EdificioConfig(string id, double porcentajeOcupacion)
     {
         Id = id;

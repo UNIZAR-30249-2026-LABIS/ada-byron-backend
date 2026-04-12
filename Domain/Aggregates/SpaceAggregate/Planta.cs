@@ -11,8 +11,8 @@ public record Planta
 
     private Planta(int valor)
     {
-        if (valor < 0 || valor > 9)
-            throw new ExcepcionDominio("Planta no válida para el edificio Ada Byron (0-9).");
+        if (valor < -1 || valor > 9)
+            throw new ExcepcionDominio("Planta no válida para el edificio Ada Byron (-1 a 9).");
         Valor = valor;
     }
 

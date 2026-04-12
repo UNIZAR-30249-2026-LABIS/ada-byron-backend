@@ -1,9 +1,12 @@
 using System.Text;
 using AdaByron.API.Hubs;
+using AdaByron.Infrastructure.Realtime;
 using AdaByron.API.Middleware;
 using AdaByron.Application;
 using AdaByron.Infrastructure;
+using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,10 +21,19 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 
 // ── API + Swagger ─────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 builder.Services.AddControllers().AddJsonOptions(options => 
 {
     options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
+=======
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
+>>>>>>> 2b5c96daeac49700c41e7e0ebb7091bac2fbad55
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -57,8 +69,14 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// ── SignalR ───────────────────────────────────────────────────────────────────
+// ── SignalR (configuración de identificador de usuario) ──────────────────────────
 builder.Services.AddSignalR();
+
+// Re-configuración para que ASP.NET identifique el Claim de Email como el identificador de usuario en los Hubs
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters.NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+});
 
 // ── CORS (desarrollo — Vite dev server) ───────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -94,5 +112,29 @@ app.UseAuthorization();
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 app.MapControllers();
 app.MapHub<ReservasHub>("/hubs/reservations");
+app.MapHub<NotificationHub>("/hubs/notifications");
+
+// ── Test de Conexión a Base de Datos (PostGIS) al Iniciar ─────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var context = services.GetRequiredService<AplicacionDbContext>();
+        logger.LogInformation("Verificando conexión a la base de datos PostGIS en {Host}...", connectionString.Split(';').FirstOrDefault(x => x.StartsWith("Host")));
+        
+        // Aplica migraciones pendientes y verifica conectividad
+        context.Database.Migrate();
+        
+        logger.LogInformation("✅ ¡Conexión exitosa! La base de datos está lista y actualizada.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ ERROR FATAL: No se pudo conectar a la base de datos PostGIS. Verifica que el contenedor 'adabyron_db' esté corriendo en el puerto 5433.");
+        // En entornos de producción podrías querer detener la ejecución, 
+        // pero en desarrollo dejamos que siga para ver los errores en la consola.
+    }
+}
 
 app.Run();

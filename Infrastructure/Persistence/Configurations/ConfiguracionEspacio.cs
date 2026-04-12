@@ -73,5 +73,9 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
         
         builder.Metadata.FindNavigation(nameof(Espacio.Reservas))?
                .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // ── Índices para PostGIS y Búsquedas ─────────────────────────────────
+        builder.HasIndex("Ubicacion").HasMethod("GIST");
+        builder.HasIndex(e => e.Planta);
     }
 }

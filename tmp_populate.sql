@@ -27,48 +27,20 @@ SELECT
         ELSE 'SalaComun'
     END AS "CategoriaReserva"
 FROM (
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_s1_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_s1_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_0_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_0_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_1_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_1_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_2_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_2_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_3_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_3_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_4_ada_byron_ui
-    WHERE is_reservable_candidate = true
-
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_4_ada_byron_ui WHERE is_reservable_candidate = true
     UNION
-
-    SELECT id_espacio, nombre, uso, altura
-    FROM spaces_floor_5_ada_byron_ui
-    WHERE is_reservable_candidate = true
+    SELECT id_espacio, nombre, uso, altura FROM spaces_floor_5_ada_byron_ui WHERE is_reservable_candidate = true
 ) t
 WHERE NOT EXISTS (
-    SELECT 1
-    FROM espacios e
-    WHERE e."CodigoEspacio" = t.id_espacio
+    SELECT 1 FROM espacios e WHERE e."CodigoEspacio" = t.id_espacio
 );

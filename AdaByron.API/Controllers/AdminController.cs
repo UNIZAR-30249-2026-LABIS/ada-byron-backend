@@ -1,5 +1,6 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Admin;
+using AdaByron.Application.UseCases.Spaces;
 using AdaByron.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 
 using AdaByron.Domain.Aggregates.ReservationAggregate;
@@ -12,18 +13,19 @@ public sealed class Espacio
 {
     private readonly List<Reserva> _reservas = new();
 
-    public string       CodigoEspacio    { get; }
-    public string       Nombre           { get; private set; }
-    public Planta       Planta           { get; private set; }
-    public Aforo        Aforo            { get; private set; }
-    public TipoEspacio  TipoFisico       { get; }
-    public TipoEspacio  CategoriaReserva { get; private set; }
-    public Departamento Departamento     { get; private set; }
+    public required string       CodigoEspacio    { get; init; }
+    public string                Nombre           { get; private set; } = string.Empty;
+    public Planta                Planta           { get; private set; } = Planta.De(0);
+    public Aforo                 Aforo            { get; private set; } = Aforo.De(1);
+    public TipoEspacio           TipoFisico       { get; }
+    public TipoEspacio           CategoriaReserva { get; private set; }
+    public required Departamento Departamento     { get; init; }
 
     public IReadOnlyCollection<Reserva> Reservas => _reservas.AsReadOnly();
 
     private Espacio() { }
 
+    [SetsRequiredMembers]
     public Espacio(string codigoEspacio, string nombre, Planta planta, Aforo aforo, TipoEspacio tipoFisico, Departamento? departamento = null)
     {
         if (string.IsNullOrWhiteSpace(codigoEspacio))
@@ -100,6 +102,23 @@ public sealed class Espacio
 
         if (!permitido)
             throw new ExcepcionPermisos($"El rol '{persona.Rol}' no tiene permiso para reservar espacios del tipo '{CategoriaReserva}'.");
+    }
+
+    /// <summary>
+    /// Actualiza las especificaciones mutables del espacio (HU-XX Admin).
+    /// Solo puede ser invocado por el Gerente a través del caso de uso correspondiente.
+    /// </summary>
+    public void Actualizar(string nuevoNombre, Aforo nuevoAforo, Planta nuevaPlanta, TipoEspacio nuevaCategoria)
+    {
+        if (string.IsNullOrWhiteSpace(nuevoNombre))
+            throw new ExcepcionDominio("La designación del espacio no puede estar vacía.");
+        if (nuevoNombre.Trim().Length > 200)
+            throw new ExcepcionDominio("La designación no puede superar los 200 caracteres.");
+
+        Nombre           = nuevoNombre.Trim();
+        Aforo            = nuevoAforo  ?? throw new ExcepcionDominio("El aforo es obligatorio.");
+        Planta           = nuevaPlanta ?? throw new ExcepcionDominio("La planta es obligatoria.");
+        CategoriaReserva = nuevaCategoria;
     }
 
     public override bool Equals(object? obj) =>

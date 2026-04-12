@@ -39,6 +39,9 @@ public static class InfrastructureExtensions
 
         // Repositorio de Configuración del Edificio (Aforo PBI-5/6)
         services.AddScoped<IEdificioConfigRepository, EdificioConfigRepository>();
+        
+        // Servicio de Notificaciones en Tiempo Real (SignalR)
+        services.AddScoped<INotificationService, AdaByron.Infrastructure.Realtime.SignalRNotificationService>();
 
         return services;
     }
