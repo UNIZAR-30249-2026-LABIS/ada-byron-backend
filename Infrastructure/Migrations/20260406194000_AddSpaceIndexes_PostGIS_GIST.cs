@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -11,9 +11,9 @@ namespace AdaByron.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateIndex(
-                name: "IX_espacios_planta",
+                name: "IX_espacios_altura",
                 table: "espacios",
-                column: "planta");
+                column: "altura");
 
             migrationBuilder.CreateIndex(
                 name: "IX_espacios_ubicacion",
@@ -26,7 +26,7 @@ namespace AdaByron.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_espacios_planta",
+                name: "IX_espacios_altura",
                 table: "espacios");
 
             migrationBuilder.DropIndex(

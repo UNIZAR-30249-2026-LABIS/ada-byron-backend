@@ -70,6 +70,21 @@ public sealed class Reserva
         Estado = EstadoReserva.Rechazada;
     }
 
+    /// <summary>
+    /// Cancelación iniciada por el propietario (HU-18). 
+    /// Invariantes: no se puede cancelar si está Rescindida/Rechazada, ni si la franja ya ha comenzado.
+    /// </summary>
+    public void Cancelar()
+    {
+        if (Estado == EstadoReserva.Rescindida)
+            throw new ExcepcionDominio("La reserva ya ha sido cancelada previamente.");
+        if (Estado == EstadoReserva.Rechazada)
+            throw new ExcepcionDominio("No se puede cancelar una reserva rechazada.");
+        if (Franja.Inicio <= DateTime.UtcNow)
+            throw new ExcepcionDominio("No se puede cancelar una reserva que ya ha comenzado o que pertenece al pasado.");
+        Estado = EstadoReserva.Rescindida;
+    }
+
     public override bool Equals(object? obj) => obj is Reserva otra && Id == otra.Id;
     public override int GetHashCode()        => Id.GetHashCode();
 }

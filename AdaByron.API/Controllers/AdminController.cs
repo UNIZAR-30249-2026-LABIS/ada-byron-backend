@@ -1,5 +1,6 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Admin;
+using AdaByron.Application.UseCases.Spaces;
 using AdaByron.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,37 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
         {
             await deleteUseCase.ExecuteAsync(id);
             return NoContent();
+        }
+        catch (ExcepcionDominio ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Actualiza las especificaciones mutables de un espacio: nombre, aforo, planta y categoría (HU-XX Admin).
+    /// Exclusivo para el rol Gerente.
+    /// </summary>
+    /// <param name="id">Código alfanumérico del espacio (e.g. A0.01).</param>
+    /// <param name="request">Nuevos datos del espacio.</param>
+    /// <response code="200">El espacio fue actualizado correctamente.</response>
+    /// <response code="400">Datos inválidos o código no encontrado.</response>
+    [HttpPut("spaces/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateSpace(string id, [FromBody] UpdateSpaceRequestDTO request, [FromServices] UpdateSpaceUseCase updateSpaceUseCase)
+    {
+        try
+        {
+            var updated = await updateSpaceUseCase.ExecuteAsync(id, request);
+            return Ok(new
+            {
+                codigoEspacio    = updated.CodigoEspacio,
+                nombre           = updated.Nombre,
+                aforo            = updated.Aforo.Valor,
+                planta           = updated.Planta.Valor,
+                categoriaReserva = updated.CategoriaReserva.ToString()
+            });
         }
         catch (ExcepcionDominio ex)
         {

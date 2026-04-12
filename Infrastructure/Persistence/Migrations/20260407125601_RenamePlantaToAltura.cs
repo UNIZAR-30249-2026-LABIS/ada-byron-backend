@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,6 +10,9 @@ namespace AdaByron.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // La base de datos ya tiene la columna 'altura' (probablemente renombrada manualmente o por reconstrucción de schema), 
+            // comentar estas operaciones evita el PostgresException: column "planta" does not exist
+            /* 
             migrationBuilder.RenameColumn(
                 name: "planta",
                 table: "espacios",
@@ -19,6 +22,8 @@ namespace AdaByron.Infrastructure.Persistence.Migrations
                 name: "IX_espacios_planta",
                 table: "espacios",
                 newName: "IX_espacios_altura");
+            */
+
         }
 
         /// <inheritdoc />

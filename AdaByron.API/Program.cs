@@ -4,7 +4,9 @@ using AdaByron.Infrastructure.Realtime;
 using AdaByron.API.Middleware;
 using AdaByron.Application;
 using AdaByron.Infrastructure;
+using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +21,12 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 
 // ── API + Swagger ─────────────────────────────────────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -99,5 +106,28 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ReservasHub>("/hubs/reservations");
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+// ── Test de Conexión a Base de Datos (PostGIS) al Iniciar ─────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var context = services.GetRequiredService<AplicacionDbContext>();
+        logger.LogInformation("Verificando conexión a la base de datos PostGIS en {Host}...", connectionString.Split(';').FirstOrDefault(x => x.StartsWith("Host")));
+        
+        // Aplica migraciones pendientes y verifica conectividad
+        context.Database.Migrate();
+        
+        logger.LogInformation("✅ ¡Conexión exitosa! La base de datos está lista y actualizada.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ ERROR FATAL: No se pudo conectar a la base de datos PostGIS. Verifica que el contenedor 'adabyron_db' esté corriendo en el puerto 5433.");
+        // En entornos de producción podrías querer detener la ejecución, 
+        // pero en desarrollo dejamos que siga para ver los errores en la consola.
+    }
+}
 
 app.Run();
