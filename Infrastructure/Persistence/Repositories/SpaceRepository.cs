@@ -54,6 +54,12 @@ public class EspacioRepository(AplicacionDbContext context) : IEspacioRepository
         await context.SaveChangesAsync();
     }
 
+    public async Task UpdateAsync(Espacio espacio)
+    {
+        context.Espacios.Update(espacio);
+        await context.SaveChangesAsync();
+    }
+
     // Convierte (lat, lon) a Point WGS-84 y consulta la shadow property "Ubicacion" via PostGIS
     public async Task<IEnumerable<Espacio>> GetCercanosAsync(double latitud, double longitud, double radioMetros)
     {

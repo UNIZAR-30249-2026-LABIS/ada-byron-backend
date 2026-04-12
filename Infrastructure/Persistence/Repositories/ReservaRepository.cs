@@ -15,12 +15,24 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
             .Where(r => r.EspacioId == codigoEspacio)
             .ToListAsync();
 
+    public async Task<IEnumerable<Reserva>> GetByPersonaAsync(string personaId)
+        => await context.Reservas
+            .Where(r => r.PersonaId == personaId)
+            .OrderByDescending(r => r.Franja.Inicio)
+            .ToListAsync();
+
     public async Task<IEnumerable<Reserva>> GetAllAsync()
         => await context.Reservas.ToListAsync();
 
     public async Task AddAsync(Reserva reserva)
     {
         await context.Reservas.AddAsync(reserva);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Reserva reserva)
+    {
+        context.Reservas.Update(reserva);
         await context.SaveChangesAsync();
     }
 
