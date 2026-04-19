@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 
@@ -19,7 +21,12 @@ public sealed class Espacio
     public Aforo                 Aforo            { get; private set; } = Aforo.De(1);
     public TipoEspacio           TipoFisico       { get; }
     public TipoEspacio           CategoriaReserva { get; private set; }
+    public bool                  EsReservable     { get; private set; }
+    [JsonIgnore]
+    public string                HorarioReservaJson { get; private set; } = HorarioReservaDia.Serialize(HorarioReservaDia.CrearHorarioPorDefecto());
     public required Departamento Departamento     { get; init; }
+    [NotMapped]
+    public IReadOnlyCollection<HorarioReservaDia> HorarioReserva => HorarioReservaDia.Deserialize(HorarioReservaJson);
 
     public IReadOnlyCollection<Reserva> Reservas => _reservas.AsReadOnly();
 
@@ -37,22 +44,27 @@ public sealed class Espacio
         Aforo             = aforo;
         TipoFisico        = tipoFisico;
         CategoriaReserva  = tipoFisico;
+        EsReservable      = tipoFisico != TipoEspacio.Despacho;
+        HorarioReservaJson = HorarioReservaDia.Serialize(HorarioReservaDia.CrearHorarioPorDefecto());
         Departamento      = departamento ?? Departamento.Null;
     }
 
-    public void UpdateDetails(string nombre, Planta planta, Aforo aforo, TipoEspacio categoria)
+    public void UpdateDetails(string nombre, Planta planta, Aforo aforo, TipoEspacio categoria, bool esReservable, IEnumerable<HorarioReservaDia>? horarioReserva = null)
     {
         if (string.IsNullOrWhiteSpace(nombre)) throw new ExcepcionDominio("El nombre no puede estar vacío.");
         Nombre = nombre.Trim();
         Planta = planta;
         Aforo = aforo;
         CategoriaReserva = categoria;
+        ActualizarConfiguracionReserva(esReservable, horarioReserva);
     }
 
     // ── Gestión de Reservas (Espacio como Aggregate Root) ───────────────────
 
     public void AddReserva(Reserva reserva, EdificioConfig configEdificio, Persona persona)
     {
+        VerificarConfiguracionReserva(reserva.Franja);
+
         // 1. Verificar Permisos (HU-13)
         VerificarPermisos(persona);
 
@@ -73,6 +85,20 @@ public sealed class Espacio
     public bool IsDisponible(FranjaHoraria franja)
     {
         return !_reservas.Any(r => r.Estado == EstadoReserva.Aceptada && r.Franja.Overlaps(franja));
+    }
+
+    public void ActualizarConfiguracionReserva(bool esReservable, IEnumerable<HorarioReservaDia>? horarioReserva)
+    {
+        if (TipoFisico == TipoEspacio.Despacho && esReservable)
+            throw new ExcepcionDominio("Los despachos no pueden hacerse reservables.");
+
+        var horarioNormalizado = HorarioReservaDia.Normalizar(horarioReserva?.ToList());
+
+        if (esReservable && horarioNormalizado.All(h => !h.Activo))
+            throw new ExcepcionDominio("Un espacio reservable debe tener al menos un día activo en su horario.");
+
+        EsReservable = esReservable;
+        HorarioReservaJson = HorarioReservaDia.Serialize(horarioNormalizado);
     }
 
     private void VerificarPermisos(Persona persona)
@@ -104,11 +130,20 @@ public sealed class Espacio
             throw new ExcepcionPermisos($"El rol '{persona.Rol}' no tiene permiso para reservar espacios del tipo '{CategoriaReserva}'.");
     }
 
+    private void VerificarConfiguracionReserva(FranjaHoraria franja)
+    {
+        if (!EsReservable)
+            throw new ExcepcionDominio($"El espacio '{CodigoEspacio}' no está habilitado para reservas.");
+
+        if (!HorarioReservaDia.PermiteReserva(HorarioReserva, franja))
+            throw new ExcepcionDominio($"El espacio '{CodigoEspacio}' no permite reservas en el horario solicitado.");
+    }
+
     /// <summary>
     /// Actualiza las especificaciones mutables del espacio (HU-XX Admin).
     /// Solo puede ser invocado por el Gerente a través del caso de uso correspondiente.
     /// </summary>
-    public void Actualizar(string nuevoNombre, Aforo nuevoAforo, Planta nuevaPlanta, TipoEspacio nuevaCategoria)
+    public void Actualizar(string nuevoNombre, Aforo nuevoAforo, Planta nuevaPlanta, TipoEspacio nuevaCategoria, bool esReservable, IEnumerable<HorarioReservaDia>? horarioReserva)
     {
         if (string.IsNullOrWhiteSpace(nuevoNombre))
             throw new ExcepcionDominio("La designación del espacio no puede estar vacía.");
@@ -119,6 +154,7 @@ public sealed class Espacio
         Aforo            = nuevoAforo  ?? throw new ExcepcionDominio("El aforo es obligatorio.");
         Planta           = nuevaPlanta ?? throw new ExcepcionDominio("La planta es obligatoria.");
         CategoriaReserva = nuevaCategoria;
+        ActualizarConfiguracionReserva(esReservable, horarioReserva);
     }
 
     public override bool Equals(object? obj) =>

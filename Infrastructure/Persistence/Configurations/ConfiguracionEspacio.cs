@@ -49,6 +49,15 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasMaxLength(30)
                .IsRequired();
 
+        builder.Property(e => e.EsReservable)
+               .HasColumnName("es_reservable")
+               .IsRequired();
+
+        builder.Property(e => e.HorarioReservaJson)
+               .HasColumnName("horario_reserva")
+               .HasColumnType("text")
+               .IsRequired();
+
         // ── ValueObject Departamento → string ─────────────────────────────────
         // Mapeo como Owned Type forzando el nombre de columna en BD.
         builder.OwnsOne(e => e.Departamento, d =>
