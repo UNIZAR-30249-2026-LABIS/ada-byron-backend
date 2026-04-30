@@ -26,7 +26,19 @@ public class UpdateSpaceUseCase(IEspacioRepository espacios)
         var nuevaPlanta = Planta.De(request.Planta); // Lanza si fuera del rango
 
         // 4. Delegar la mutación al Aggregate Root (encapsula las invariantes del dominio)
-        espacio.Actualizar(request.Nombre, nuevoAforo, nuevaPlanta, nuevaCategoria);
+        espacio.Actualizar(
+            request.Nombre,
+            nuevoAforo,
+            nuevaPlanta,
+            nuevaCategoria,
+            request.EsReservable,
+            request.HorarioReserva.Select(h => new HorarioReservaDia
+            {
+                DiaSemana = h.DiaSemana,
+                Activo = h.Activo,
+                HoraInicio = h.HoraInicio,
+                HoraFin = h.HoraFin
+            }).ToList());
 
         // 5. Persistir
         await espacios.UpdateAsync(espacio);

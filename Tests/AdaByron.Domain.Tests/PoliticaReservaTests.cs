@@ -147,4 +147,39 @@ public class EspacioTests
         Assert.Throws<ExcepcionConflictoReserva>(() => 
             aula.AddReserva(r2, new EdificioConfig("AdaByron", 100.0), docente));
     }
+
+    [Fact]
+    public void AddReserva_EspacioNoReservable_LanzaExcepcion()
+    {
+        var gerente = CrearPersona(Rol.Gerente);
+        var seminario = CrearEspacio(TipoEspacio.Seminario, 30, "Informatica");
+        seminario.ActualizarConfiguracionReserva(false, HorarioReservaDia.CrearHorarioPorDefecto());
+        var reserva = CrearReservaDeIntento(seminario, 5);
+
+        Assert.Throws<ExcepcionDominio>(() =>
+            seminario.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), gerente));
+    }
+
+    [Fact]
+    public void AddReserva_FueraDelHorarioPermitido_LanzaExcepcion()
+    {
+        var gerente = CrearPersona(Rol.Gerente);
+        var aula = CrearEspacio(TipoEspacio.Aula, 30, "Informatica");
+        var horario = Enumerable.Range(0, 7)
+            .Select(dia => new HorarioReservaDia
+            {
+                DiaSemana = dia,
+                Activo = dia == (int)DateTime.Today.DayOfWeek,
+                HoraInicio = "08:00",
+                HoraFin = "12:00"
+            })
+            .ToList();
+        aula.ActualizarConfiguracionReserva(true, horario);
+
+        var franja = new FranjaHoraria(DateTime.Today.AddHours(13), DateTime.Today.AddHours(14));
+        var reserva = new Reserva("test@unizar.es", aula.CodigoEspacio, franja, 5);
+
+        Assert.Throws<ExcepcionDominio>(() =>
+            aula.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), gerente));
+    }
 }

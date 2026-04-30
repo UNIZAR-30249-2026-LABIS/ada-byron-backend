@@ -3,18 +3,21 @@ using System;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AdaByron.Infrastructure.Migrations
+namespace AdaByron.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AplicacionDbContext))]
-    partial class AplicacionDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418225441_AddEdificioConfig")]
+    partial class AddEdificioConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,15 +114,6 @@ namespace AdaByron.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
-
-                    b.Property<bool>("EsReservable")
-                        .HasColumnType("boolean")
-                        .HasColumnName("es_reservable");
-
-                    b.Property<string>("HorarioReservaJson")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("horario_reserva");
 
                     b.Property<string>("Nombre")
                         .IsRequired()

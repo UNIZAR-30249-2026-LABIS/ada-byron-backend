@@ -16,6 +16,20 @@ public sealed class UpdateSpaceRequestDTO
 
     /// <summary>Categoría funcional para reservas: Aula, Laboratorio, Seminario, SalaComun, Despacho.</summary>
     public string Categoria { get; set; } = string.Empty;
+
+    /// <summary>Indica si el espacio admite reservas puntuales.</summary>
+    public bool EsReservable { get; set; }
+
+    /// <summary>Horario semanal de reserva del espacio.</summary>
+    public List<UpdateSpaceScheduleDayDTO> HorarioReserva { get; set; } = new();
+}
+
+public sealed class UpdateSpaceScheduleDayDTO
+{
+    public int DiaSemana { get; set; }
+    public bool Activo { get; set; }
+    public string HoraInicio { get; set; } = "00:00";
+    public string HoraFin { get; set; } = "23:59";
 }
 
 /// <summary>

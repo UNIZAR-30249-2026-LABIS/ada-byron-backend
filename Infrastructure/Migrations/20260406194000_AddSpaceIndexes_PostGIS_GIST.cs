@@ -10,6 +10,8 @@ namespace AdaByron.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("ALTER TABLE espacios RENAME COLUMN planta TO altura;");
+
             migrationBuilder.CreateIndex(
                 name: "IX_espacios_altura",
                 table: "espacios",

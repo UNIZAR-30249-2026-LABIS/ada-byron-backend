@@ -1,6 +1,7 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Admin;
 using AdaByron.Application.UseCases.Spaces;
+using AdaByron.Domain.Aggregates.SpaceAggregate;
 using AdaByron.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -52,7 +53,15 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
                 dto.Nombre, 
                 AdaByron.Domain.Aggregates.SpaceAggregate.Planta.De(dto.Planta), 
                 AdaByron.Domain.Aggregates.SpaceAggregate.Aforo.De(dto.Aforo), 
-                Enum.Parse<AdaByron.Domain.Aggregates.SpaceAggregate.TipoEspacio>(dto.Categoria)
+                Enum.Parse<AdaByron.Domain.Aggregates.SpaceAggregate.TipoEspacio>(dto.Categoria),
+                dto.EsReservable,
+                dto.HorarioReserva?.Select(h => new HorarioReservaDia
+                {
+                    DiaSemana = h.DiaSemana,
+                    Activo = h.Activo,
+                    HoraInicio = h.HoraInicio,
+                    HoraFin = h.HoraFin
+                }).ToList()
             );
             await dbContext.SaveChangesAsync();
             return Ok();
@@ -113,4 +122,14 @@ public class SpaceEditRequestDTO
     public int Aforo { get; set; }
     public int Planta { get; set; }
     public string Categoria { get; set; } = string.Empty;
+    public bool EsReservable { get; set; }
+    public List<HorarioReservaDiaRequestDTO> HorarioReserva { get; set; } = new();
+}
+
+public class HorarioReservaDiaRequestDTO
+{
+    public int DiaSemana { get; set; }
+    public bool Activo { get; set; }
+    public string HoraInicio { get; set; } = "00:00";
+    public string HoraFin { get; set; } = "23:59";
 }
