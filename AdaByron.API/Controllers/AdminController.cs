@@ -1,6 +1,7 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Admin;
 using AdaByron.Application.UseCases.Spaces;
+using AdaByron.Domain.Aggregates.PersonAggregate;
 using AdaByron.Domain.Aggregates.SpaceAggregate;
 using AdaByron.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -94,6 +95,87 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
         return Ok(dto);
     }
 
+    [HttpGet("staff")]
+    public async Task<IActionResult> GetStaff([FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
+    {
+        var personas = await dbContext.Personas
+            .OrderBy(p => p.Apellidos)
+            .ThenBy(p => p.Nombre)
+            .Select(p => new
+            {
+                email = p.Email,
+                nombre = p.Nombre,
+                apellidos = p.Apellidos,
+                rol = p.Rol.ToString(),
+                departamento = p.Departamento.Nombre
+            })
+            .ToListAsync();
+
+        return Ok(personas);
+    }
+
+    [HttpPost("staff")]
+    public async Task<IActionResult> CreateStaff(
+        [FromBody] StaffUpsertRequestDTO dto,
+        [FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
+    {
+        if (await dbContext.Personas.AnyAsync(p => p.Email == dto.Email.Trim().ToLowerInvariant()))
+            return Conflict("Ya existe una persona registrada con ese email.");
+
+        try
+        {
+            var persona = new Persona(
+                dto.Email,
+                dto.Nombre,
+                dto.Apellidos,
+                ParseRol(dto.Rol),
+                ParseDepartamento(dto.Departamento));
+
+            dbContext.Personas.Add(persona);
+            await dbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetStaff), new { email = persona.Email }, new
+            {
+                email = persona.Email,
+                nombre = persona.Nombre,
+                apellidos = persona.Apellidos,
+                rol = persona.Rol.ToString(),
+                departamento = persona.Departamento.Nombre
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPut("staff/{email}")]
+    public async Task<IActionResult> UpdateStaff(
+        string email,
+        [FromBody] StaffUpsertRequestDTO dto,
+        [FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var persona = await dbContext.Personas.FirstOrDefaultAsync(p => p.Email == normalizedEmail);
+        if (persona == null) return NotFound("Persona no encontrada.");
+
+        try
+        {
+            persona.ActualizarDatosAdministrativos(
+                dto.Nombre,
+                dto.Apellidos,
+                ParseRol(dto.Rol),
+                ParseDepartamento(dto.Departamento));
+
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpDelete("reservations/{id}")]
     public async Task<IActionResult> DeleteReservation(
         Guid id, 
@@ -114,6 +196,21 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
 
         return NoContent();
     }
+
+    private static Rol ParseRol(string rol)
+    {
+        if (!Enum.TryParse<Rol>(rol, true, out var parsed))
+            throw new ExcepcionDominio("Rol no válido.");
+
+        return parsed;
+    }
+
+    private static Departamento? ParseDepartamento(string? departamento)
+    {
+        return string.IsNullOrWhiteSpace(departamento)
+            ? null
+            : new Departamento(departamento.Trim());
+    }
 }
 
 public class SpaceEditRequestDTO 
@@ -132,4 +229,13 @@ public class HorarioReservaDiaRequestDTO
     public bool Activo { get; set; }
     public string HoraInicio { get; set; } = "00:00";
     public string HoraFin { get; set; } = "23:59";
+}
+
+public class StaffUpsertRequestDTO
+{
+    public string Email { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
+    public string Apellidos { get; set; } = string.Empty;
+    public string Rol { get; set; } = string.Empty;
+    public string? Departamento { get; set; }
 }

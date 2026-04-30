@@ -8,9 +8,9 @@ using AdaByron.Domain.Exceptions;
 /// </summary>
 public sealed class Persona
 {
-    public required string Email        { get; init; }
-    public required string Nombre       { get; init; }
-    public required string Apellidos    { get; init; }
+    public string Email        { get; private set; } = string.Empty;
+    public string Nombre       { get; private set; } = string.Empty;
+    public string Apellidos    { get; private set; } = string.Empty;
     public Rol          Rol          { get; private set; }
 
     private Departamento? _departamento;
@@ -26,12 +26,33 @@ public sealed class Persona
     [SetsRequiredMembers]
     public Persona(string email, string nombre, string apellidos, Rol rol, Departamento? departamento = null)
     {
+        ValidarEmail(email);
+        (Nombre, Apellidos, Rol, _departamento) = NormalizarDatos(nombre, apellidos, rol, departamento);
+        Email = email.Trim().ToLowerInvariant();
+    }
+
+    public string NombreCompleto => $"{Nombre} {Apellidos}";
+
+    public void ActualizarDatosAdministrativos(string nombre, string apellidos, Rol rol, Departamento? departamento = null)
+    {
+        (Nombre, Apellidos, Rol, _departamento) = NormalizarDatos(nombre, apellidos, rol, departamento);
+    }
+
+    private static void ValidarEmail(string email)
+    {
         if (string.IsNullOrWhiteSpace(email))
             throw new ExcepcionDominio("El email no puede estar vacío.");
 
         if (!email.Contains('@') || !email.Contains('.'))
             throw new ExcepcionDominio($"El email '{email}' no tiene un formato válido.");
+    }
 
+    private static (string nombre, string apellidos, Rol rol, Departamento departamento) NormalizarDatos(
+        string nombre,
+        string apellidos,
+        Rol rol,
+        Departamento? departamento)
+    {
         if (string.IsNullOrWhiteSpace(nombre))
             throw new ExcepcionDominio("El nombre no puede estar vacío.");
 
@@ -42,14 +63,9 @@ public sealed class Persona
         if ((rol is Rol.TecnicoLab or Rol.Docente) && dpt == Departamento.Null)
             throw new ExcepcionDominio($"El rol '{rol}' requiere especificar un departamento.");
 
-        Email        = email.Trim().ToLowerInvariant();
-        Nombre       = nombre.Trim();
-        Apellidos    = apellidos.Trim();
-        Rol          = rol;
-        _departamento = dpt == Departamento.Null ? new Departamento("Sin Departamento") : dpt;
+        var normalizedDept = dpt == Departamento.Null ? new Departamento("Sin Departamento") : dpt;
+        return (nombre.Trim(), apellidos.Trim(), rol, normalizedDept);
     }
-
-    public string NombreCompleto => $"{Nombre} {Apellidos}";
 
     public override bool Equals(object? obj) =>
         obj is Persona otra && Email == otra.Email;
