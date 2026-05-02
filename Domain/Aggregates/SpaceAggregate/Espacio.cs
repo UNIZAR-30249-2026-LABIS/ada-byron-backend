@@ -28,6 +28,13 @@ public sealed class Espacio
     [NotMapped]
     public IReadOnlyCollection<HorarioReservaDia> HorarioReserva => HorarioReservaDia.Deserialize(HorarioReservaJson);
 
+    /// <summary>
+    /// Porcentaje de ocupación máximo específico para este espacio (PBI-12 / HU-O1).
+    /// Si es null se hereda el porcentaje global del edificio configurado en EdificioConfig.
+    /// Rango válido cuando tiene valor: [0, 100].
+    /// </summary>
+    public double? PorcentajeOcupacionEspecifico { get; private set; }
+
     public IReadOnlyCollection<Reserva> Reservas => _reservas.AsReadOnly();
 
     private Espacio() { }
@@ -72,12 +79,16 @@ public sealed class Espacio
         if (!IsDisponible(reserva.Franja))
             throw new ExcepcionConflictoReserva($"El espacio '{CodigoEspacio}' ya tiene una reserva en ese horario.");
 
-        // 3. Verificar aforo dinámico (Regla F5 / HU-14)
-        var edificio = Edificio.AdaByron;
-        int maximoPermitido = edificio.CalcularCapacidadPermitida(Aforo.Valor, configEdificio.PorcentajeOcupacion);
-        
+        // 3. Verificar aforo dinámico (Regla F5 / HU-14 / PBI-12)
+        int maximoPermitido = CalcularAforoEfectivo(configEdificio);
+
         if (reserva.NumeroAsistentes > maximoPermitido)
-            throw new ExcepcionAforoSuperado($"Aforo superado. Máximo permitido: {maximoPermitido} ({configEdificio.PorcentajeOcupacion}% de {Aforo.Valor}).");
+        {
+            double porcentajeAplicado = PorcentajeOcupacionEspecifico ?? configEdificio.PorcentajeOcupacion;
+            string origen = PorcentajeOcupacionEspecifico.HasValue ? "específico del espacio" : "global del edificio";
+            throw new ExcepcionAforoSuperado(
+                $"Aforo superado. Máximo permitido: {maximoPermitido} ({porcentajeAplicado}% {origen} de {Aforo.Valor}).");
+        }
 
         _reservas.Add(reserva);
     }
@@ -155,6 +166,28 @@ public sealed class Espacio
         Planta           = nuevaPlanta ?? throw new ExcepcionDominio("La planta es obligatoria.");
         CategoriaReserva = nuevaCategoria;
         ActualizarConfiguracionReserva(esReservable, horarioReserva);
+    }
+
+    /// <summary>
+    /// Establece o elimina el porcentaje de ocupación específico de este espacio (PBI-12 / HU-O1).
+    /// Pasar null elimina la restricción específica y se aplicará el porcentaje global del edificio.
+    /// </summary>
+    public void SetPorcentajeEspecifico(double? porcentaje)
+    {
+        if (porcentaje.HasValue && (porcentaje.Value < 0 || porcentaje.Value > 100))
+            throw new ExcepcionDominio("El porcentaje específico debe estar entre 0 y 100.");
+
+        PorcentajeOcupacionEspecifico = porcentaje;
+    }
+
+    /// <summary>
+    /// Calcula el aforo efectivo del espacio aplicando el porcentaje correcto (PBI-12).
+    /// Usa el porcentaje específico del espacio si está definido; si no, usa el global del edificio.
+    /// </summary>
+    public int CalcularAforoEfectivo(EdificioConfig configEdificio)
+    {
+        double porcentaje = PorcentajeOcupacionEspecifico ?? configEdificio.PorcentajeOcupacion;
+        return Edificio.AdaByron.CalcularCapacidadPermitida(Aforo.Valor, porcentaje);
     }
 
     public override bool Equals(object? obj) =>

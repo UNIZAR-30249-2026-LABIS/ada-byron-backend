@@ -73,6 +73,44 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
         }
     }
 
+    /// <summary>
+    /// PBI-12 (HU-O1): Define o elimina el porcentaje de uso específico de un espacio.
+    /// PATCH /api/admin/spaces/{id}/aforo-especifico
+    /// Body: { "porcentajeEspecifico": 75.0 }  → aplica restricción específica al espacio.
+    /// Body: { "porcentajeEspecifico": null }   → elimina la restricción; el espacio hereda el % global.
+    /// </summary>
+    [HttpPatch("spaces/{id}/aforo-especifico")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetSpaceOccupancy(
+        string id,
+        [FromBody] SetSpaceOccupancyDTO dto,
+        [FromServices] SetSpaceOccupancyUseCase setOccupancyUseCase,
+        [FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
+    {
+        try
+        {
+            await setOccupancyUseCase.ExecuteAsync(id, dto);
+
+            // Leer el estado actualizado para devolverlo en la respuesta
+            var espacio = await dbContext.Espacios.FindAsync(id);
+            return Ok(new
+            {
+                codigoEspacio = id,
+                porcentajeEspecifico = espacio!.PorcentajeOcupacionEspecifico,
+                esHeredado = !espacio.PorcentajeOcupacionEspecifico.HasValue,
+                mensaje = espacio.PorcentajeOcupacionEspecifico.HasValue
+                    ? $"Porcentaje específico del {espacio.PorcentajeOcupacionEspecifico}% aplicado al espacio '{id}'."
+                    : $"Porcentaje específico eliminado. El espacio '{id}' hereda el porcentaje global del edificio."
+            });
+        }
+        catch (AdaByron.Domain.Exceptions.ExcepcionDominio ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("reservations/live")]
     public async Task<IActionResult> GetLiveReservations([FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
     {

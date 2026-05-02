@@ -58,6 +58,13 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasColumnType("text")
                .IsRequired();
 
+        // ── PBI-12: Porcentaje de ocupación específico del espacio (nullable) ──
+        // Cuando es NULL, se hereda el porcentaje global del edificio (EdificioConfig).
+        builder.Property(e => e.PorcentajeOcupacionEspecifico)
+               .HasColumnName("porcentaje_ocupacion_especifico")
+               .HasColumnType("double precision")
+               .IsRequired(false);
+
         // ── ValueObject Departamento → string ─────────────────────────────────
         // Mapeo como Owned Type forzando el nombre de columna en BD.
         builder.OwnsOne(e => e.Departamento, d =>

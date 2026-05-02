@@ -45,3 +45,16 @@ public sealed class MiReservaDTO
     public string Estado { get; set; } = string.Empty;
     public int NumeroAsistentes { get; set; }
 }
+
+/// <summary>
+/// Request para definir o eliminar el porcentaje de ocupación específico de un espacio (PBI-12 / HU-O1).
+/// PorcentajeEspecifico = null → hereda el porcentaje global del edificio.
+/// PorcentajeEspecifico ∈ [0, 100] → aplica la restricción específica de este espacio.
+/// </summary>
+public sealed class SetSpaceOccupancyDTO
+{
+    /// <summary>
+    /// Porcentaje entre 0 y 100, o null para revertir al porcentaje global del edificio.
+    /// </summary>
+    public double? PorcentajeEspecifico { get; set; }
+}
