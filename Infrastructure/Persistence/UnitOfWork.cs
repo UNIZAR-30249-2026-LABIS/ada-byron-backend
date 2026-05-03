@@ -24,8 +24,15 @@ public sealed class UnitOfWork(AplicacionDbContext context) : IUnitOfWork
         if (_transaction is null)
             throw new InvalidOperationException("No hay ninguna transacción activa.");
             
-        await context.SaveChangesAsync();
-        await _transaction.CommitAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+            await _transaction.CommitAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new AdaByron.Domain.Exceptions.ConcurrencyException("Los datos han sido modificados por otro usuario simultáneamente. Por favor, inténtelo de nuevo.", ex);
+        }
     }
 
     public async Task RollbackAsync()

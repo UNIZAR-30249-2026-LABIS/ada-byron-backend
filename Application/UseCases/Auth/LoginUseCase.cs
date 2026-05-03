@@ -20,6 +20,8 @@ public class LoginUseCase(IPersonaRepository personas, ITokenService tokenServic
             Token:          token,
             Email:          persona.Email,
             NombreCompleto: persona.NombreCompleto,
-            Rol:            persona.Rol);
+            Rol:            persona.Rol,
+            EsGerente:      persona.EsGerente,
+            Roles:          persona.Roles.Select(r => r.ToString()).ToArray());
     }
 }

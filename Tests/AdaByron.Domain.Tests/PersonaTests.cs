@@ -12,17 +12,17 @@ public class PersonaTests
         var persona = new Persona("conserje@unizar.es", "Ana", "Pérez", Rol.Conserje);
 
         Assert.Throws<ExcepcionDominio>(() =>
-            persona.ActualizarDatosAdministrativos("Ana", "Pérez", Rol.Docente));
+            persona.ActualizarDatosAdministrativos("Ana", "Pérez", Rol.DocenteInvestigador));
     }
 
     [Fact]
     public void ActualizarDatosAdministrativos_A_Gerente_PermiteDepartamentoVacio()
     {
-        var persona = new Persona("docente@unizar.es", "Luis", "Sanz", Rol.Docente, new Departamento("Informática"));
+        var persona = new Persona("docente@unizar.es", "Luis", "Sanz", Rol.DocenteInvestigador, Departamento.Informatica);
 
         persona.ActualizarDatosAdministrativos("Luis", "Sanz", Rol.Gerente);
 
         Assert.Equal(Rol.Gerente, persona.Rol);
-        Assert.Equal("Sin Departamento", persona.Departamento.Nombre);
+        Assert.True(persona.Departamento.IsNull);
     }
 }

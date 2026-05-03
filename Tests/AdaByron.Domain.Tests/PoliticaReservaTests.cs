@@ -69,8 +69,8 @@ public class EspacioTests
     [Fact]
     public void AddReserva_TecnicoLabReservaLaboratorioMismoDepartamento_Exito()
     {
-        var tecnico = CrearPersona(Rol.TecnicoLab, "Informatica");
-        var lab     = CrearEspacio(TipoEspacio.Laboratorio, 20, "Informatica");
+        var tecnico = CrearPersona(Rol.TecnicoLaboratorio, "Informática");
+        var lab     = CrearEspacio(TipoEspacio.Laboratorio, 20, "Informática");
         var reserva = CrearReservaDeIntento(lab, 5);
 
         lab.AddReserva(reserva, new EdificioConfig("AdaByron", 100.0), tecnico);
@@ -80,8 +80,8 @@ public class EspacioTests
     [Fact]
     public void AddReserva_TecnicoLabReservaLaboratorioDistintoDepartamento_Lanza()
     {
-        var tecnico = CrearPersona(Rol.TecnicoLab, "Informatica");
-        var lab     = CrearEspacio(TipoEspacio.Laboratorio, 20, "Matematicas");
+        var tecnico = CrearPersona(Rol.TecnicoLaboratorio, "Informática");
+        var lab     = CrearEspacio(TipoEspacio.Laboratorio, 20, "Ing. de Sistemas e Ing. Electrónica y Comunicaciones");
         var reserva = CrearReservaDeIntento(lab, 5);
 
         Assert.Throws<ExcepcionPermisos>(() => 
@@ -96,8 +96,8 @@ public class EspacioTests
     [InlineData(60, 10.0, 6)]     // Límite exacto al 10%
     public void AddReserva_LímiteExactoAforo_Exito(int capacidad, double porcentaje, int asistentes)
     {
-        var docente = CrearPersona(Rol.Docente, "Informatica");
-        var aula    = CrearEspacio(TipoEspacio.Aula, capacidad, "Informatica");
+        var docente = CrearPersona(Rol.DocenteInvestigador, "Informática");
+        var aula    = CrearEspacio(TipoEspacio.Aula, capacidad, "Informática");
         var reserva = CrearReservaDeIntento(aula, asistentes);
 
         aula.AddReserva(reserva, new EdificioConfig("AdaByron", porcentaje), docente);
@@ -110,8 +110,8 @@ public class EspacioTests
     [InlineData(100, 0.0, 1)]     // Edificio cerrado (0%) cualquier reserva falla
     public void AddReserva_AforoExcedido_LanzaExcepcion(int capacidad, double porcentaje, int asistentes)
     {
-        var docente = CrearPersona(Rol.Docente, "Informatica");
-        var aula    = CrearEspacio(TipoEspacio.Aula, capacidad, "Informatica");
+        var docente = CrearPersona(Rol.DocenteInvestigador, "Informática");
+        var aula    = CrearEspacio(TipoEspacio.Aula, capacidad, "Informática");
         var reserva = CrearReservaDeIntento(aula, asistentes);
 
         Assert.Throws<ExcepcionAforoSuperado>(() => 
@@ -124,8 +124,8 @@ public class EspacioTests
     public void AddReserva_HorarioSolapado_LanzaExcepcionConflicto()
     {
         // Arrange
-        var docente = CrearPersona(Rol.Docente, "Informatica");
-        var aula    = CrearEspacio(TipoEspacio.Aula, 100, "Informatica");
+        var docente = CrearPersona(Rol.DocenteInvestigador, "Informática");
+        var aula    = CrearEspacio(TipoEspacio.Aula, 100, "Informática");
         
         var inicio = DateTime.Today.AddHours(14);
         var fin    = DateTime.Today.AddHours(16);

@@ -32,8 +32,15 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
 
     public async Task UpdateAsync(Reserva reserva)
     {
-        context.Reservas.Update(reserva);
-        await context.SaveChangesAsync();
+        try
+        {
+            context.Reservas.Update(reserva);
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new AdaByron.Domain.Exceptions.ConcurrencyException("La reserva ha sido modificada por otro usuario.", ex);
+        }
     }
 
     public async Task DeleteAsync(Guid id)
@@ -66,8 +73,15 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
 
     public async Task UpdateRangeAsync(IEnumerable<Reserva> reservas)
     {
-        context.Reservas.UpdateRange(reservas);
-        await context.SaveChangesAsync();
+        try
+        {
+            context.Reservas.UpdateRange(reservas);
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new AdaByron.Domain.Exceptions.ConcurrencyException("Alguna de las reservas ha sido modificada por otro usuario.", ex);
+        }
     }
 
     public async Task<IEnumerable<(Reserva, string NombreEspacio, string NombreUsuario)>> GetLiveWithDetailsAsync()

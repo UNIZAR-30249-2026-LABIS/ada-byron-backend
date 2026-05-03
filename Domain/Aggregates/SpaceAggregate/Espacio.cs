@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
 
 using AdaByron.Domain.Aggregates.ReservationAggregate;
@@ -24,9 +25,14 @@ public sealed class Espacio
     public bool                  EsReservable     { get; private set; }
     [JsonIgnore]
     public string                HorarioReservaJson { get; private set; } = HorarioReservaDia.Serialize(HorarioReservaDia.CrearHorarioPorDefecto());
-    public required Departamento Departamento     { get; init; }
+    public Departamento          Departamento     { get; private set; } = Departamento.Null;
+    public TipoAsignacionEspacio TipoAsignacion   { get; private set; } = TipoAsignacionEspacio.Eina;
+    [JsonIgnore]
+    public string PersonasAsignadasJson { get; private set; } = "[]";
     [NotMapped]
     public IReadOnlyCollection<HorarioReservaDia> HorarioReserva => HorarioReservaDia.Deserialize(HorarioReservaJson);
+    [NotMapped]
+    public IReadOnlyCollection<string> PersonasAsignadas => DeserializeAssignedPeople(PersonasAsignadasJson);
 
     /// <summary>
     /// Porcentaje de ocupación máximo específico para este espacio (PBI-12 / HU-O1).
@@ -54,6 +60,7 @@ public sealed class Espacio
         EsReservable      = tipoFisico != TipoEspacio.Despacho;
         HorarioReservaJson = HorarioReservaDia.Serialize(HorarioReservaDia.CrearHorarioPorDefecto());
         Departamento      = departamento ?? Departamento.Null;
+        TipoAsignacion    = Departamento.IsNull ? TipoAsignacionEspacio.Eina : TipoAsignacionEspacio.Departamento;
     }
 
     public void UpdateDetails(string nombre, Planta planta, Aforo aforo, TipoEspacio categoria, bool esReservable, IEnumerable<HorarioReservaDia>? horarioReserva = null)
@@ -113,33 +120,7 @@ public sealed class Espacio
     }
 
     private void VerificarPermisos(Persona persona)
-    {
-        bool permitido = persona.Rol switch
-        {
-            Rol.Estudiante => CategoriaReserva == TipoEspacio.SalaComun,
-            Rol.TecnicoLab => CategoriaReserva switch
-            {
-                TipoEspacio.SalaComun => true,
-                TipoEspacio.Seminario => true,
-                TipoEspacio.Laboratorio => persona.Departamento.IsSameAs(Departamento),
-                _ => false
-            },
-            Rol.Docente => CategoriaReserva switch
-            {
-                TipoEspacio.SalaComun => true,
-                TipoEspacio.Aula => true,
-                TipoEspacio.Seminario => true,
-                TipoEspacio.Laboratorio => persona.Departamento.IsSameAs(Departamento),
-                _ => false
-            },
-            Rol.Conserje => CategoriaReserva != TipoEspacio.Despacho,
-            Rol.Gerente  => CategoriaReserva != TipoEspacio.Despacho,
-            _ => false
-        };
-
-        if (!permitido)
-            throw new ExcepcionPermisos($"El rol '{persona.Rol}' no tiene permiso para reservar espacios del tipo '{CategoriaReserva}'.");
-    }
+        => new AdaByron.Domain.Services.PoliticaReserva().VerificarPermisos(persona, this);
 
     private void VerificarConfiguracionReserva(FranjaHoraria franja)
     {
@@ -180,6 +161,38 @@ public sealed class Espacio
         PorcentajeOcupacionEspecifico = porcentaje;
     }
 
+    public void ActualizarAsignacion(TipoAsignacionEspacio tipo, Departamento? departamento, IEnumerable<string>? personas)
+    {
+        var assignedPeople = (personas ?? [])
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .Select(p => p.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToArray();
+
+        switch (tipo)
+        {
+            case TipoAsignacionEspacio.Eina:
+                Departamento = Departamento.Null;
+                PersonasAsignadasJson = "[]";
+                break;
+            case TipoAsignacionEspacio.Departamento:
+                Departamento = departamento ?? throw new ExcepcionDominio("La asignación por departamento requiere un departamento válido.");
+                PersonasAsignadasJson = "[]";
+                break;
+            case TipoAsignacionEspacio.Personas:
+                if (assignedPeople.Length == 0)
+                    throw new ExcepcionDominio("La asignación a personas requiere al menos una persona.");
+                Departamento = Departamento.Null;
+                PersonasAsignadasJson = JsonSerializer.Serialize(assignedPeople);
+                break;
+            default:
+                throw new ExcepcionDominio("Tipo de asignación no válido.");
+        }
+
+        ValidarCompatibilidadAsignacion(tipo, assignedPeople);
+        TipoAsignacion = tipo;
+    }
+
     /// <summary>
     /// Calcula el aforo efectivo del espacio aplicando el porcentaje correcto (PBI-12).
     /// Usa el porcentaje específico del espacio si está definido; si no, usa el global del edificio.
@@ -195,4 +208,40 @@ public sealed class Espacio
 
     public override int GetHashCode() =>
         CodigoEspacio.GetHashCode(StringComparison.Ordinal);
+
+    private void ValidarCompatibilidadAsignacion(TipoAsignacionEspacio tipo, IReadOnlyCollection<string> personasAsignadas)
+    {
+        if ((TipoFisico == TipoEspacio.Aula || TipoFisico == TipoEspacio.SalaComun) &&
+            tipo != TipoAsignacionEspacio.Eina)
+        {
+            throw new ExcepcionDominio("Las aulas y salas comunes deben asignarse a EINA.");
+        }
+
+        if ((TipoFisico == TipoEspacio.Seminario || TipoFisico == TipoEspacio.Laboratorio) &&
+            tipo == TipoAsignacionEspacio.Personas)
+        {
+            throw new ExcepcionDominio("Los seminarios y laboratorios solo pueden asignarse a EINA o a un departamento.");
+        }
+
+        if (TipoFisico == TipoEspacio.Despacho && tipo == TipoAsignacionEspacio.Eina)
+        {
+            throw new ExcepcionDominio("Los despachos deben asignarse a un departamento o a una o más personas.");
+        }
+    }
+
+    private static IReadOnlyCollection<string> DeserializeAssignedPeople(string serialized)
+    {
+        if (string.IsNullOrWhiteSpace(serialized))
+            return [];
+
+        try
+        {
+            var people = JsonSerializer.Deserialize<List<string>>(serialized);
+            return people is { Count: > 0 } ? people : [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
 }

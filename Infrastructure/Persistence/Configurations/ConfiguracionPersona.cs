@@ -24,10 +24,9 @@ public class ConfiguracionPersona : IEntityTypeConfiguration<Persona>
                .HasMaxLength(150)
                .IsRequired();
 
-        // El enum Rol se persiste como string para legibilidad en la BD
-        builder.Property(p => p.Rol)
-               .HasConversion<string>()
-               .HasMaxLength(30)
+        builder.Property(p => p.RolesSerializados)
+               .HasColumnName("Rol")
+               .HasColumnType("text")
                .IsRequired();
 
         // ── ValueObject Departamento ──────────────────────────────────────────

@@ -6,4 +6,5 @@ namespace AdaByron.Application.Ports.Out;
 public interface INotificationService
 {
     Task NotifyReservationRescindedAsync(Guid id, string emailPersona, string codigoEspacio);
+    Task NotifyCancellationAsync(string userId, string message);
 }

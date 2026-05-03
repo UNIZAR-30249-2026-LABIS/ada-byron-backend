@@ -53,8 +53,18 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
                .HasColumnName("es_reservable")
                .IsRequired();
 
+        builder.Property(e => e.TipoAsignacion)
+               .HasConversion<string>()
+               .HasMaxLength(30)
+               .IsRequired();
+
         builder.Property(e => e.HorarioReservaJson)
                .HasColumnName("horario_reserva")
+               .HasColumnType("text")
+               .IsRequired();
+
+        builder.Property(e => e.PersonasAsignadasJson)
+               .HasColumnName("personas_asignadas")
                .HasColumnType("text")
                .IsRequired();
 

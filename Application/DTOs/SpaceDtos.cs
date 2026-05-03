@@ -22,6 +22,10 @@ public sealed class UpdateSpaceRequestDTO
 
     /// <summary>Horario semanal de reserva del espacio.</summary>
     public List<UpdateSpaceScheduleDayDTO> HorarioReserva { get; set; } = new();
+
+    public string? TipoAsignacion { get; set; }
+    public string? DepartamentoAsignado { get; set; }
+    public List<string> PersonasAsignadas { get; set; } = new();
 }
 
 public sealed class UpdateSpaceScheduleDayDTO

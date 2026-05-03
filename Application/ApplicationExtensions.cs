@@ -20,8 +20,11 @@ public static class ApplicationExtensions
         services.AddScoped<CancelarReservaUseCase>();
         services.AddScoped<GetMisReservasUseCase>();
 
-        // Registra UseCase de Admin
+        // Registra UseCases de Admin
         services.AddScoped<AdaByron.Application.UseCases.Admin.UpdateBuildingConfigUseCase>();
+        services.AddScoped<AdaByron.Application.UseCases.Admin.GetStaffUseCase>();
+        services.AddScoped<AdaByron.Application.UseCases.Admin.CreateStaffUseCase>();
+        services.AddScoped<AdaByron.Application.UseCases.Admin.UpdateStaffUseCase>();
 
         // Registra UseCases de Espacios
         services.AddScoped<GetFilteredSpacesUseCase>();
@@ -33,7 +36,7 @@ public static class ApplicationExtensions
         services.AddScoped<AdaByron.Application.UseCases.Reservations.ForceCancelReservationUseCase>();       // PBI-13
         services.AddScoped<AdaByron.Application.UseCases.Reservations.ApproveReservationExceptionUseCase>(); // PBI-13
         services.AddScoped<AdaByron.Application.UseCases.Reservations.CleanExpiredReservationsUseCase>();    // PBI-14
-        
+
         return services;
     }
 }

@@ -36,25 +36,24 @@ public class CrearReservaUseCaseTests
     public async Task ExecuteAsync_EspacioNoExiste_LanzaExcepcionDominio()
     {
         _personasMock.Setup(p => p.GetByEmailAsync("test@unizar.es"))
-            .ReturnsAsync(new Persona("test@unizar.es", "Test", "User", Rol.Docente, new Departamento("Informatica")));
+            .ReturnsAsync(new Persona("test@unizar.es", "Test", "User", Rol.DocenteInvestigador, Departamento.Informatica));
         
         _espaciosMock.Setup(e => e.GetByCodigoAsync("A-01")).ReturnsAsync((Espacio)null!);
 
         var req = new CrearReservaRequestDTO(
-            Email: "test@unizar.es",
             CodigoEspacio: "A-01",
             NumeroAsistentes: 10,
             Inicio: DateTime.Now.AddHours(1),
             Fin: DateTime.Now.AddHours(2)
         );
 
-        await Assert.ThrowsAsync<ExcepcionDominio>(() => _useCase.ExecuteAsync(req));
+        await Assert.ThrowsAsync<ExcepcionDominio>(() => _useCase.ExecuteAsync("test@unizar.es", req));
     }
 
     [Fact]
     public async Task ExecuteAsync_HappyPath_GeneraCommitYToken()
     {
-        var persona = new Persona("docente@unizar.es", "Juan", "Perez", Rol.Docente, new Departamento("Informatica"));
+        var persona = new Persona("docente@unizar.es", "Juan", "Perez", Rol.DocenteInvestigador, Departamento.Informatica);
         var espacio = new Espacio("A-01", "Aula", Planta.De(1), Aforo.De(50), TipoEspacio.Aula, null);
         
         _personasMock.Setup(p => p.GetByEmailAsync("docente@unizar.es")).ReturnsAsync(persona);
@@ -63,14 +62,13 @@ public class CrearReservaUseCaseTests
         _reservasMock.Setup(r => r.GetByEspacioAsync("A-01")).ReturnsAsync(new List<Reserva>());
 
         var req = new CrearReservaRequestDTO(
-            Email: "docente@unizar.es",
             CodigoEspacio: "A-01",
             NumeroAsistentes: 20,
             Inicio: DateTime.Now.AddDays(1),
             Fin: DateTime.Now.AddDays(1).AddHours(2)
         );
 
-        var response = await _useCase.ExecuteAsync(req);
+        var response = await _useCase.ExecuteAsync("docente@unizar.es", req);
 
         Assert.Equal("A-01", response.CodigoEspacio);
         Assert.Equal(EstadoReserva.Aceptada.ToString(), response.Estado);

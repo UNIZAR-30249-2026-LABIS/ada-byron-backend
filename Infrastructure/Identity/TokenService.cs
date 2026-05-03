@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AdaByron.Application.Ports.Out;
-using AdaByron.Domain.Aggregates.PersonAggregate; using AdaByron.Domain.Aggregates.SpaceAggregate; using AdaByron.Domain.Aggregates.ReservationAggregate;
+using AdaByron.Domain.Aggregates.PersonAggregate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -20,13 +20,14 @@ public class TokenService(IConfiguration config) : ITokenService
 
         var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Email,  persona.Email),
-            new Claim(ClaimTypes.Role,   persona.Rol.ToString()),
-            new Claim(ClaimTypes.Name,   persona.NombreCompleto),
-            new Claim("departamento",    persona.Departamento.Nombre),
+            new(ClaimTypes.Email, persona.Email),
+            new(ClaimTypes.Name, persona.NombreCompleto),
+            new("departamento", persona.Departamento.Nombre),
         };
+
+        claims.AddRange(persona.Roles.Select(rol => new Claim(ClaimTypes.Role, rol.ToString())));
 
         var expiracionHoras = int.TryParse(config["Jwt:ExpirationHours"], out var h) ? h : 8;
 

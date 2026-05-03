@@ -6,4 +6,6 @@ public record AuthResponseDTO(
     string Token,
     string Email,
     string NombreCompleto,
-    Rol    Rol);
+    Rol    Rol,
+    bool   EsGerente,
+    IReadOnlyCollection<string> Roles);

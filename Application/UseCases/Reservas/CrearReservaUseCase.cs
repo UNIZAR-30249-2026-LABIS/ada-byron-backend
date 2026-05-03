@@ -19,11 +19,11 @@ public class CrearReservaUseCase(
     IUnitOfWork            uow,
     IEdificioConfigRepository configRepo)
 {
-    public async Task<ReservaResponseDTO> ExecuteAsync(CrearReservaRequestDTO request)
+    public async Task<ReservaResponseDTO> ExecuteAsync(string emailFromJwt, CrearReservaRequestDTO request)
     {
-        // 1. Cargar entidades base
-        var persona = await personas.GetByEmailAsync(request.Email)
-            ?? throw new ExcepcionUsuarioNoRegistrado(request.Email);
+        // 1. Cargar entidades base — email procede del JWT, no del cuerpo HTTP
+        var persona = await personas.GetByEmailAsync(emailFromJwt)
+            ?? throw new ExcepcionUsuarioNoRegistrado(emailFromJwt);
 
         var franja = new FranjaHoraria(request.Inicio, request.Fin);
         var configEdificio = await configRepo.GetConfigAsync() 

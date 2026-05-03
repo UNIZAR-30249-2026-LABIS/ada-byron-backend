@@ -1,7 +1,6 @@
 namespace AdaByron.Application.DTOs;
 
 public record CrearReservaRequestDTO(
-    string Email,
     string CodigoEspacio,
     DateTime Inicio,
     DateTime Fin,

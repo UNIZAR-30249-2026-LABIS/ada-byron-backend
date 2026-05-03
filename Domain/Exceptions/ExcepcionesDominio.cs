@@ -4,6 +4,7 @@ namespace AdaByron.Domain.Exceptions;
 public class ExcepcionDominio : Exception
 {
     public ExcepcionDominio(string mensaje) : base(mensaje) { }
+    public ExcepcionDominio(string mensaje, Exception innerException) : base(mensaje, innerException) { }
 }
 
 // Rol del usuario no permite reservar ese tipo de espacio → HTTP 403

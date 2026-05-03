@@ -47,9 +47,9 @@ public class DatabaseFixture : IAsyncLifetime
     {
         var configure = new EdificioConfig("AdaByron", 100);
         
-        var persona = new Persona("test@unizar.es", "Test", "User", Rol.Docente, new Departamento("Informatica"));
+        var persona = new Persona("test@unizar.es", "Test", "User", Rol.DocenteInvestigador, Departamento.Informatica);
         
-        var espacio = new Espacio("A-100", "Aula Magna", Planta.De(1), Aforo.De(50), TipoEspacio.Aula, new Departamento("Informatica"));
+        var espacio = new Espacio("A-100", "Aula Magna", Planta.De(1), Aforo.De(50), TipoEspacio.Aula, Departamento.Informatica);
 
         context.EdificioConfigs.Add(configure);
         context.Personas.Add(persona);

@@ -13,6 +13,10 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
         builder.ToTable("reservas");
 
         builder.HasKey(r => r.Id);
+        
+        // PBI: Optimistic Concurrency Control usando xmin de PostgreSQL
+        // En Npgsql >= 7.0, xmin se configura definiendo una propiedad uint e indicando IsRowVersion().
+        builder.Property(r => r.Version).IsRowVersion();
 
         builder.Property(r => r.PersonaId)
                .HasMaxLength(200)

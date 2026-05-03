@@ -23,4 +23,10 @@ public class SignalRNotificationService(IHubContext<NotificationHub> hubContext)
             Accion = "Anulacion"
         });
     }
+
+    public async Task NotifyCancellationAsync(string userId, string message)
+    {
+        await hubContext.Clients.User(userId).SendAsync("ReceiveCancellation", message);
+    }
+
 }

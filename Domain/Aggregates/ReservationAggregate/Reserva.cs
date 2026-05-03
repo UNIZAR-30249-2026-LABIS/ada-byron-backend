@@ -16,6 +16,7 @@ public sealed class Reserva
     public int            NumeroAsistentes  { get; private set; }
     public EstadoReserva  Estado            { get; private set; }
     public DateTime       FechaEstadoModificado { get; private set; }
+    public uint           Version           { get; private set; }
 
     // Requerido por EF Core (HU-15)
     private Reserva() { }
@@ -44,7 +45,7 @@ public sealed class Reserva
     // Constructor para reconstituir desde persistencia
     [SetsRequiredMembers]
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,
-                    int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado)
+                    int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado, uint version)
     {
         Id               = id;
         PersonaId        = personaId;
@@ -53,11 +54,12 @@ public sealed class Reserva
         NumeroAsistentes = numeroAsistentes;
         Estado           = estado;
         FechaEstadoModificado = fechaEstadoModificado;
+        Version          = version;
     }
 
     public static Reserva Reconstituir(Guid id, string personaId, string espacioId,
-                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado)
-        => new(id, personaId, espacioId, franja, numeroAsistentes, estado, fechaEstadoModificado);
+                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado, uint version = 0)
+        => new(id, personaId, espacioId, franja, numeroAsistentes, estado, fechaEstadoModificado, version);
 
     public void Aceptar()
     {

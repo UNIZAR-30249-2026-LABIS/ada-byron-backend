@@ -1,5 +1,6 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Reservations;
+using AdaByron.Domain.Aggregates.PersonAggregate;
 using AdaByron.Domain.Aggregates.SpaceAggregate;
 using AdaByron.Domain.Exceptions;
 using AdaByron.Domain.Interfaces;
@@ -43,6 +44,16 @@ public class UpdateSpaceUseCase(
                 HoraInicio = h.HoraInicio,
                 HoraFin = h.HoraFin
             }).ToList());
+
+        if (!string.IsNullOrWhiteSpace(request.TipoAsignacion) &&
+            Enum.TryParse<TipoAsignacionEspacio>(request.TipoAsignacion, true, out var tipoAsignacion))
+        {
+            var departamento = string.IsNullOrWhiteSpace(request.DepartamentoAsignado)
+                ? Departamento.Null
+                : Departamento.From(request.DepartamentoAsignado);
+
+            espacio.ActualizarAsignacion(tipoAsignacion, departamento, request.PersonasAsignadas);
+        }
 
         // 5. Persistir
         await espacios.UpdateAsync(espacio);

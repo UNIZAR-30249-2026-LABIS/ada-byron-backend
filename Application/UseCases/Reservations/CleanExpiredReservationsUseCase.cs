@@ -1,3 +1,4 @@
+using AdaByron.Application.Ports.Out;
 using AdaByron.Domain.Interfaces;
 
 namespace AdaByron.Application.UseCases.Reservations;
@@ -7,7 +8,8 @@ namespace AdaByron.Application.UseCases.Reservations;
 /// más de los días especificados.
 /// </summary>
 public class CleanExpiredReservationsUseCase(
-    IReservaRepository reservas)
+    IReservaRepository reservas,
+    INotificationService notifier)
 {
     public async Task<int> ExecuteAsync(int daysThreshold = 7)
     {
@@ -29,6 +31,15 @@ public class CleanExpiredReservationsUseCase(
 
         // 3. Persistir cambios en lote
         await reservas.UpdateRangeAsync(expiredReservations);
+
+        // 4. Notificar en tiempo real a los usuarios afectados
+        foreach (var reserva in expiredReservations)
+        {
+            await notifier.NotifyCancellationAsync(
+                reserva.PersonaId, 
+                $"El sistema ha cancelado tu reserva para el espacio {reserva.EspacioId} al haber transcurrido {daysThreshold} días sin poder acomodarla."
+            );
+        }
 
         return expiredReservations.Count;
     }

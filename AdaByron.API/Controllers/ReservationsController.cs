@@ -1,35 +1,36 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.UseCases.Reservas;
 using AdaByron.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AdaByron.API.Controllers;
 
 [ApiController]
 [Route("api/reservations")]
-public class ReservationsController : ControllerBase
+[Authorize]
+public class ReservationsController(CrearReservaUseCase crearReservaUseCase) : ControllerBase
 {
-    private readonly CrearReservaUseCase _crearReservaUseCase;
-
-    public ReservationsController(CrearReservaUseCase crearReservaUseCase)
-    {
-        _crearReservaUseCase = crearReservaUseCase;
-    }
-
     /// <summary>
-    /// Crea una nueva reserva para un espacio, validando las Reglas de Negocio F1-F6 y la Incompatibilidad Horaria de forma Atómica.
+    /// Crea una reserva para el usuario autenticado (HU-10).
+    /// El email se extrae del JWT; el cliente no puede suplantar a otro usuario.
+    /// Valida las Reglas F1-F6 y la incompatibilidad horaria de forma atómica (HU-T2).
     /// </summary>
-    /// <param name="request">Los datos de la reserva y el email del solicitante (DUMMY AUTH para el prototipo).</param>
-    /// <returns>La reserva generada y aceptada, o error HTTP 409 si sobrepasa el aforo o entra en colisión.</returns>
-    /// <response code="200">Reserva aceptada e insertada en la Base de Datos con su Token identificativo.</response>
-    /// <response code="409">Conflicto de Dominio: Inconsistencia con el aforo, la matriz de mutabilidad o conflicto horario concurrente.</response>
     [HttpPost]
     [ProducesResponseType(typeof(ReservaResponseDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ReservaResponseDTO>> Create([FromBody] CrearReservaRequestDTO request)
     {
-        // El middleware capturará las excepciones de dominio y retornará 409 automáticamente
-        var result = await _crearReservaUseCase.ExecuteAsync(request);
+        var email = User.FindFirstValue(ClaimTypes.Email)
+                 ?? User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")
+                 ?? User.Identity?.Name;
+
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized("No se pudo identificar al usuario desde el token.");
+
+        var result = await crearReservaUseCase.ExecuteAsync(email, request);
         return Ok(result);
     }
 }

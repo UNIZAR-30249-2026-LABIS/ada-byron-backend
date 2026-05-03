@@ -37,7 +37,7 @@ public class UpdateBuildingConfigUseCaseTests
         // 2. Comprobamos la integración en la regla de negocio del Agregado
         var sala = new Espacio("A-01", "Aula Magna", Planta.De(1), Aforo.De(40), TipoEspacio.Aula, null);
         var config = new EdificioConfig("AdaByron", 25);
-        var docente = new Persona("docente@unizar.es", "Juan", "Perez", Rol.Docente, new Departamento("Informatica"));
+        var docente = new Persona("docente@unizar.es", "Juan", "Perez", Rol.DocenteInvestigador, Departamento.Informatica);
         var reserva = new Reserva(docente.Email, sala.CodigoEspacio, new FranjaHoraria(DateTime.Now.AddHours(1), DateTime.Now.AddHours(2)), 11);
 
         // Assert: una sala de 40 plazas al 25% solo permite 10 personas, si metemos 11 debe petar

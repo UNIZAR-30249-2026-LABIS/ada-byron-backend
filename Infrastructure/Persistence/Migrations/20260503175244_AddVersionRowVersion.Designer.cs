@@ -3,18 +3,21 @@ using System;
 using AdaByron.Infrastructure.Persistence.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace AdaByron.Infrastructure.Migrations
+namespace AdaByron.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AplicacionDbContext))]
-    partial class AplicacionDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503175244_AddVersionRowVersion")]
+    partial class AddVersionRowVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,10 +43,10 @@ namespace AdaByron.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("RolesSerializados")
+                    b.Property<string>("Rol")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Rol");
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.HasKey("Email");
 
@@ -136,19 +139,9 @@ namespace AdaByron.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("PersonasAsignadasJson")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("personas_asignadas");
-
                     b.Property<double?>("PorcentajeOcupacionEspecifico")
                         .HasColumnType("double precision")
                         .HasColumnName("porcentaje_ocupacion_especifico");
-
-                    b.Property<string>("TipoAsignacion")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
 
                     b.Property<string>("TipoFisico")
                         .IsRequired()
