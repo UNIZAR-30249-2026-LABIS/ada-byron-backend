@@ -43,6 +43,9 @@ public static class InfrastructureExtensions
         // Servicio de Notificaciones en Tiempo Real (SignalR)
         services.AddScoped<INotificationService, AdaByron.Infrastructure.Realtime.SignalRNotificationService>();
 
+        // PBI-14: Servicio en segundo plano para limpiar reservas expiradas
+        services.AddHostedService<AdaByron.Infrastructure.Services.ExpiredReservationsCleanupService>();
+
         return services;
     }
 }

@@ -33,6 +33,10 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
                .HasMaxLength(50)
                .IsRequired();
 
+        builder.Property(r => r.FechaEstadoModificado)
+               .HasColumnName("fecha_estado_modificado")
+               .IsRequired();
+
         // ── ValueObject FranjaHoraria → OwnsOne ───────────────────────────────
         // FranjaHoraria tiene 2 campos (Inicio, Fin) → OwnsOne es la opción correcta.
         // EF Core mapeará las columnas "inicio" y "fin" dentro de la tabla "reservas".

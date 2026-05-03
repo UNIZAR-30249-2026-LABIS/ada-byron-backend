@@ -157,6 +157,20 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
         }
     }
 
+    /// <summary>
+    /// PBI-14: Endpoint de testing para forzar la ejecución manual del Background Service de limpieza.
+    /// POST /api/admin/reservations/trigger-cleanup
+    /// </summary>
+    [HttpPost("reservations/trigger-cleanup")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> TriggerCleanup(
+        [FromServices] AdaByron.Application.UseCases.Reservations.CleanExpiredReservationsUseCase useCase,
+        [FromQuery] int days = 7)
+    {
+        var count = await useCase.ExecuteAsync(days);
+        return Ok(new { message = $"Limpieza manual ejecutada.", canceladas = count });
+    }
+
     [HttpGet("reservations/live")]
     public async Task<IActionResult> GetLiveReservations([FromServices] AdaByron.Infrastructure.Persistence.DbContext.AplicacionDbContext dbContext)
     {

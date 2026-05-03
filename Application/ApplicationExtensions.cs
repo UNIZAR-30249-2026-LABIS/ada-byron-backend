@@ -32,6 +32,7 @@ public static class ApplicationExtensions
         services.AddScoped<AdaByron.Application.UseCases.Reservations.DeleteReservationUseCase>();
         services.AddScoped<AdaByron.Application.UseCases.Reservations.ForceCancelReservationUseCase>();       // PBI-13
         services.AddScoped<AdaByron.Application.UseCases.Reservations.ApproveReservationExceptionUseCase>(); // PBI-13
+        services.AddScoped<AdaByron.Application.UseCases.Reservations.CleanExpiredReservationsUseCase>();    // PBI-14
         
         return services;
     }

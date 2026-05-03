@@ -15,6 +15,7 @@ public sealed class Reserva
     public required FranjaHoraria  Franja            { get; init; }
     public int            NumeroAsistentes  { get; private set; }
     public EstadoReserva  Estado            { get; private set; }
+    public DateTime       FechaEstadoModificado { get; private set; }
 
     // Requerido por EF Core (HU-15)
     private Reserva() { }
@@ -37,12 +38,13 @@ public sealed class Reserva
         Franja           = franja ?? throw new ExcepcionDominio("La franja horaria es obligatoria.");
         NumeroAsistentes = numeroAsistentes;
         Estado           = EstadoReserva.Pendiente;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     // Constructor para reconstituir desde persistencia
     [SetsRequiredMembers]
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,
-                    int numeroAsistentes, EstadoReserva estado)
+                    int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado)
     {
         Id               = id;
         PersonaId        = personaId;
@@ -50,17 +52,19 @@ public sealed class Reserva
         Franja           = franja;
         NumeroAsistentes = numeroAsistentes;
         Estado           = estado;
+        FechaEstadoModificado = fechaEstadoModificado;
     }
 
     public static Reserva Reconstituir(Guid id, string personaId, string espacioId,
-                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado)
-        => new(id, personaId, espacioId, franja, numeroAsistentes, estado);
+                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado)
+        => new(id, personaId, espacioId, franja, numeroAsistentes, estado, fechaEstadoModificado);
 
     public void Aceptar()
     {
         if (Estado != EstadoReserva.Pendiente)
             throw new ExcepcionDominio($"Solo se puede aceptar una reserva en estado Pendiente (Actual: {Estado}).");
         Estado = EstadoReserva.Aceptada;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     public void Rechazar()
@@ -68,6 +72,7 @@ public sealed class Reserva
         if (Estado == EstadoReserva.Aceptada)
             throw new ExcepcionDominio("No se puede rechazar una reserva ya aceptada.");
         Estado = EstadoReserva.Rechazada;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -83,6 +88,7 @@ public sealed class Reserva
         if (Franja.Inicio <= DateTime.UtcNow)
             throw new ExcepcionDominio("No se puede cancelar una reserva que ya ha comenzado o que pertenece al pasado.");
         Estado = EstadoReserva.Rescindida;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -95,6 +101,7 @@ public sealed class Reserva
             return; // Idempotente: si ya está en otro estado no se hace nada
 
         Estado = EstadoReserva.PotencialmenteInvalida;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -107,6 +114,7 @@ public sealed class Reserva
             throw new ExcepcionDominio("La reserva ya está cancelada.");
 
         Estado = EstadoReserva.Rescindida;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -120,6 +128,7 @@ public sealed class Reserva
                 $"Solo se puede admitir una excepción en reservas PotencialmenteInvalida (Actual: {Estado}).");
 
         Estado = EstadoReserva.Aceptada;
+        FechaEstadoModificado = DateTime.UtcNow;
     }
 
     public override bool Equals(object? obj) => obj is Reserva otra && Id == otra.Id;

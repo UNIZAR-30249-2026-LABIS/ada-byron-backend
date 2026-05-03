@@ -10,6 +10,8 @@ public interface IReservaRepository
     Task<IEnumerable<Reserva>> GetAllAsync();
     /// <summary>PBI-13: Obtiene reservas Aceptadas de un espacio con franja futura (candidatas a invalidarse).</summary>
     Task<IEnumerable<Reserva>> GetAceptadasFuturasByEspacioAsync(string codigoEspacio);
+    /// <summary>PBI-14: Obtiene reservas PotencialmenteInvalida cuya fecha de modificación sea anterior a beforeDate.</summary>
+    Task<IEnumerable<Reserva>> GetExpiredPotentiallyInvalidAsync(DateTime beforeDate);
     Task AddAsync(Reserva reserva);
     Task UpdateAsync(Reserva reserva);
     Task UpdateRangeAsync(IEnumerable<Reserva> reservas);
