@@ -17,14 +17,14 @@ public class ExpiredReservationsCleanupService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Leer configuración, por defecto 1 minuto y 7 días
-        var intervalMinutes = configuration.GetValue<int>("CleanupService:IntervalMinutes", 1);
+        // Leer configuración, por defecto 24 horas y 7 días
+        var intervalHours = configuration.GetValue<int>("CleanupService:IntervalHours", 24);
         var expirationDays = configuration.GetValue<int>("CleanupService:ExpirationDays", 7);
 
-        logger.LogInformation("ExpiredReservationsCleanupService iniciado. Intervalo: {IntervalMinutes}m, Expiración: {ExpirationDays} días.", intervalMinutes, expirationDays);
+        logger.LogInformation("ExpiredReservationsCleanupService iniciado. Intervalo: {IntervalHours}h, Expiración: {ExpirationDays} días.", intervalHours, expirationDays);
 
         // Retraso inicial para no bloquear el inicio de la app
-        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -44,7 +44,7 @@ public class ExpiredReservationsCleanupService(
             }
 
             // Esperar hasta la siguiente ejecución
-            await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), stoppingToken);
+            await Task.Delay(TimeSpan.FromHours(intervalHours), stoppingToken);
         }
     }
 }
