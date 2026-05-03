@@ -74,10 +74,9 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
     }
 
     /// <summary>
-    /// PBI-12 (HU-O1): Define o elimina el porcentaje de uso específico de un espacio.
+    /// PBI-12 (HU-O1) + PBI-13 (HU-O4): Define o elimina el porcentaje de uso específico de un espacio.
+    /// Tras el cambio, marca como PotencialmenteInvalida las reservas que ya no cumplen el aforo efectivo.
     /// PATCH /api/admin/spaces/{id}/aforo-especifico
-    /// Body: { "porcentajeEspecifico": 75.0 }  → aplica restricción específica al espacio.
-    /// Body: { "porcentajeEspecifico": null }   → elimina la restricción; el espacio hereda el % global.
     /// </summary>
     [HttpPatch("spaces/{id}/aforo-especifico")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -91,7 +90,7 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
     {
         try
         {
-            await setOccupancyUseCase.ExecuteAsync(id, dto);
+            int reservasMarcadas = await setOccupancyUseCase.ExecuteAsync(id, dto);
 
             // Leer el estado actualizado para devolverlo en la respuesta
             var espacio = await dbContext.Espacios.FindAsync(id);
@@ -100,10 +99,57 @@ public class AdminController(UpdateBuildingConfigUseCase updateConfigUseCase) : 
                 codigoEspacio = id,
                 porcentajeEspecifico = espacio!.PorcentajeOcupacionEspecifico,
                 esHeredado = !espacio.PorcentajeOcupacionEspecifico.HasValue,
+                reservasMarcadasComoInvalidas = reservasMarcadas,
                 mensaje = espacio.PorcentajeOcupacionEspecifico.HasValue
-                    ? $"Porcentaje específico del {espacio.PorcentajeOcupacionEspecifico}% aplicado al espacio '{id}'."
-                    : $"Porcentaje específico eliminado. El espacio '{id}' hereda el porcentaje global del edificio."
+                    ? $"Porcentaje específico del {espacio.PorcentajeOcupacionEspecifico}% aplicado. {reservasMarcadas} reservas marcadas como PotencialmenteInvalida."
+                    : $"Porcentaje eliminado. El espacio hereda el % global. {reservasMarcadas} reservas marcadas."
             });
+        }
+        catch (AdaByron.Domain.Exceptions.ExcepcionDominio ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// PBI-13 (HU-O4): El Gerente fuerza la cancelación de una reserva (incluso en curso).
+    /// POST /api/admin/reservations/{id}/force-cancel
+    /// </summary>
+    [HttpPost("reservations/{id}/force-cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForceCancel(
+        Guid id,
+        [FromServices] AdaByron.Application.UseCases.Reservations.ForceCancelReservationUseCase useCase)
+    {
+        try
+        {
+            await useCase.ExecuteAsync(id);
+            return NoContent();
+        }
+        catch (AdaByron.Domain.Exceptions.ExcepcionDominio ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// PBI-13 (HU-O4): El Gerente admite una excepción, restaurando la reserva a Aceptada.
+    /// POST /api/admin/reservations/{id}/approve-exception
+    /// </summary>
+    [HttpPost("reservations/{id}/approve-exception")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApproveException(
+        Guid id,
+        [FromServices] AdaByron.Application.UseCases.Reservations.ApproveReservationExceptionUseCase useCase)
+    {
+        try
+        {
+            await useCase.ExecuteAsync(id);
+            return NoContent();
         }
         catch (AdaByron.Domain.Exceptions.ExcepcionDominio ex)
         {

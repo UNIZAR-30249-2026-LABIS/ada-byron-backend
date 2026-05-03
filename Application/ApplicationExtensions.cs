@@ -1,5 +1,6 @@
 using AdaByron.Application.UseCases.Auth;
 using AdaByron.Application.UseCases.Reservas;
+using AdaByron.Application.UseCases.Reservations;
 using AdaByron.Application.UseCases.Spaces;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,10 +25,13 @@ public static class ApplicationExtensions
 
         // Registra UseCases de Espacios
         services.AddScoped<GetFilteredSpacesUseCase>();
+        services.AddScoped<ReevaluarReservasEspacioUseCase>(); // PBI-13 (HU-O4) — reevaluación de reservas
         services.AddScoped<UpdateSpaceUseCase>();
-        services.AddScoped<SetSpaceOccupancyUseCase>(); // PBI-12 (HU-O1)
+        services.AddScoped<SetSpaceOccupancyUseCase>();        // PBI-12 (HU-O1)
         services.AddScoped<AdaByron.Application.UseCases.Reservations.GetLiveReservationsUseCase>();
         services.AddScoped<AdaByron.Application.UseCases.Reservations.DeleteReservationUseCase>();
+        services.AddScoped<AdaByron.Application.UseCases.Reservations.ForceCancelReservationUseCase>();       // PBI-13
+        services.AddScoped<AdaByron.Application.UseCases.Reservations.ApproveReservationExceptionUseCase>(); // PBI-13
         
         return services;
     }

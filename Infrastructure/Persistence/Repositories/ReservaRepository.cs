@@ -46,6 +46,22 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
         }
     }
     
+    public async Task<IEnumerable<Reserva>> GetAceptadasFuturasByEspacioAsync(string codigoEspacio)
+    {
+        var now = DateTime.UtcNow;
+        return await context.Reservas
+            .Where(r => r.EspacioId == codigoEspacio
+                     && r.Estado == EstadoReserva.Aceptada
+                     && r.Franja.Fin > now)
+            .ToListAsync();
+    }
+
+    public async Task UpdateRangeAsync(IEnumerable<Reserva> reservas)
+    {
+        context.Reservas.UpdateRange(reservas);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<(Reserva, string NombreEspacio, string NombreUsuario)>> GetLiveWithDetailsAsync()
     {
         var now = DateTime.UtcNow;

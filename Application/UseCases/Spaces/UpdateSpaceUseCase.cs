@@ -1,4 +1,5 @@
 using AdaByron.Application.DTOs;
+using AdaByron.Application.UseCases.Reservations;
 using AdaByron.Domain.Aggregates.SpaceAggregate;
 using AdaByron.Domain.Exceptions;
 using AdaByron.Domain.Interfaces;
@@ -7,9 +8,12 @@ namespace AdaByron.Application.UseCases.Spaces;
 
 /// <summary>
 /// Caso de uso HU-XX Admin: Actualiza las especificaciones de un espacio.
+/// PBI-13 (HU-O4): Tras el cambio, reevalúa las reservas existentes.
 /// Solo accesible por el rol Gerente (la autorización se aplica en el controlador).
 /// </summary>
-public class UpdateSpaceUseCase(IEspacioRepository espacios)
+public class UpdateSpaceUseCase(
+    IEspacioRepository espacios,
+    ReevaluarReservasEspacioUseCase reevaluar)
 {
     public async Task<Espacio> ExecuteAsync(string codigoEspacio, UpdateSpaceRequestDTO request)
     {
@@ -42,6 +46,9 @@ public class UpdateSpaceUseCase(IEspacioRepository espacios)
 
         // 5. Persistir
         await espacios.UpdateAsync(espacio);
+
+        // 6. PBI-13: Reevaluar reservas afectadas por el nuevo aforo base
+        await reevaluar.ExecuteAsync(espacio);
 
         return espacio;
     }

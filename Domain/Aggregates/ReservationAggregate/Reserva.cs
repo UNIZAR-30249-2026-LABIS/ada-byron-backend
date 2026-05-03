@@ -71,7 +71,7 @@ public sealed class Reserva
     }
 
     /// <summary>
-    /// Cancelación iniciada por el propietario (HU-18). 
+    /// Cancela el propietario de la reserva (HU-18).
     /// Invariantes: no se puede cancelar si está Rescindida/Rechazada, ni si la franja ya ha comenzado.
     /// </summary>
     public void Cancelar()
@@ -83,6 +83,43 @@ public sealed class Reserva
         if (Franja.Inicio <= DateTime.UtcNow)
             throw new ExcepcionDominio("No se puede cancelar una reserva que ya ha comenzado o que pertenece al pasado.");
         Estado = EstadoReserva.Rescindida;
+    }
+
+    /// <summary>
+    /// PBI-13 (HU-O4): Marca la reserva como PotencialmenteInvalida tras un cambio de aforo/porcentaje.
+    /// Solo aplica a reservas Aceptadas (las Pendientes no han superado las reglas aún).
+    /// </summary>
+    public void MarcarComoPotencialmenteInvalida()
+    {
+        if (Estado != EstadoReserva.Aceptada)
+            return; // Idempotente: si ya está en otro estado no se hace nada
+
+        Estado = EstadoReserva.PotencialmenteInvalida;
+    }
+
+    /// <summary>
+    /// PBI-13 (HU-O4): Cancelación administrativa forzada por el Gerente.
+    /// Sin restricciones de tiempo; el gerente puede cancelar incluso reservas en curso.
+    /// </summary>
+    public void ForzarCancelacion()
+    {
+        if (Estado == EstadoReserva.Rescindida)
+            throw new ExcepcionDominio("La reserva ya está cancelada.");
+
+        Estado = EstadoReserva.Rescindida;
+    }
+
+    /// <summary>
+    /// PBI-13 (HU-O4): El Gerente admite una excepción y restaura la reserva a Aceptada.
+    /// Solo es válido desde el estado PotencialmenteInvalida.
+    /// </summary>
+    public void AdmitirExcepcion()
+    {
+        if (Estado != EstadoReserva.PotencialmenteInvalida)
+            throw new ExcepcionDominio(
+                $"Solo se puede admitir una excepción en reservas PotencialmenteInvalida (Actual: {Estado}).");
+
+        Estado = EstadoReserva.Aceptada;
     }
 
     public override bool Equals(object? obj) => obj is Reserva otra && Id == otra.Id;

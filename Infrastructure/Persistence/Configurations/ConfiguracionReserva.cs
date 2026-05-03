@@ -25,11 +25,12 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
         builder.Property(r => r.NumeroAsistentes)
                .IsRequired();
 
-        // Estado persiste como string para legibilidad en la BD
+        // Estado persiste como string para legibilidad en la BD.
+        // Longitud 50 para acomodar el valor más largo: PotencialmenteInvalida (22 chars).
         builder.Property(r => r.Estado)
                .HasConversion<string>()
                .HasColumnName("estado")
-               .HasMaxLength(20)
+               .HasMaxLength(50)
                .IsRequired();
 
         // ── ValueObject FranjaHoraria → OwnsOne ───────────────────────────────
