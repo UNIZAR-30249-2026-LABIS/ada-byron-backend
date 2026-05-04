@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -37,12 +37,12 @@ namespace AdaByron.Infrastructure.Persistence.Migrations
             migrationBuilder.Sql("""
                 UPDATE personas
                 SET "Rol" = CASE "Rol"
-                    WHEN 'Estudiante' THEN '[""Estudiante""]'
-                    WHEN 'TecnicoLab' THEN '[""TecnicoLaboratorio""]'
-                    WHEN 'Docente' THEN '[""DocenteInvestigador""]'
-                    WHEN 'Conserje' THEN '[""Conserje""]'
-                    WHEN 'Gerente' THEN '[""Gerente""]'
-                    ELSE '[""Estudiante""]'
+                    WHEN 'Estudiante' THEN '["Estudiante"]'
+                    WHEN 'TecnicoLab' THEN '["TecnicoLaboratorio"]'
+                    WHEN 'Docente' THEN '["DocenteInvestigador"]'
+                    WHEN 'Conserje' THEN '["Conserje"]'
+                    WHEN 'Gerente' THEN '["Gerente"]'
+                    ELSE '["Estudiante"]'
                 END;
                 """);
 

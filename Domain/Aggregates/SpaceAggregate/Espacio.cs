@@ -118,6 +118,10 @@ public sealed class Espacio
 
     private void VerificarConfiguracionReserva(FranjaHoraria franja)
     {
+        if (!Edificio.PlantasReservables.Contains(Planta.Valor))
+            throw new ExcepcionDominio(
+                $"El espacio '{CodigoEspacio}' está en la planta {Planta} que no admite reservas en el edificio Ada Byron.");
+
         if (!EsReservable)
             throw new ExcepcionDominio($"El espacio '{CodigoEspacio}' no está habilitado para reservas.");
 

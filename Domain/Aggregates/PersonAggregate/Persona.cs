@@ -118,8 +118,13 @@ public sealed class Persona
         return [rol, Rol.Gerente];
     }
 
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    {
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
+
     private static string SerializeRoles(IEnumerable<Rol> roles) =>
-        JsonSerializer.Serialize(roles);
+        JsonSerializer.Serialize(roles, JsonOptions);
 
     private static IReadOnlyCollection<Rol> DeserializeRoles(string serialized)
     {
@@ -128,7 +133,7 @@ public sealed class Persona
 
         try
         {
-            var roles = JsonSerializer.Deserialize<List<Rol>>(serialized);
+            var roles = JsonSerializer.Deserialize<List<Rol>>(serialized, JsonOptions);
             if (roles is { Count: > 0 })
                 return roles;
         }

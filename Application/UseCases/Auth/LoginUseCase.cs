@@ -9,7 +9,7 @@ public class LoginUseCase(IPersonaRepository personas, ITokenService tokenServic
 {
     public async Task<AuthResponseDTO> ExecuteAsync(LoginRequestDTO request)
     {
-        var persona = await personas.GetByEmailAsync(request.Email);
+        var persona = await personas.GetByEmailAsync(request.Email.Trim().ToLowerInvariant());
 
         if (persona is null)
             throw new ExcepcionUsuarioNoRegistrado(request.Email);

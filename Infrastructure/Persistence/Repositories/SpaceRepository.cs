@@ -13,22 +13,34 @@ public class EspacioRepository(AplicacionDbContext context) : IEspacioRepository
             .Include(e => e.Reservas)
             .FirstOrDefaultAsync(e => e.CodigoEspacio == codigo);
 
+    // Tipos de espacio que tienen sentido en el sistema de reservas.
+    private static readonly TipoEspacio[] TiposReservables =
+        [TipoEspacio.Aula, TipoEspacio.Laboratorio, TipoEspacio.Seminario, TipoEspacio.SalaComun, TipoEspacio.Despacho];
+
+    // Valores de planta con espacios gestionables en Ada Byron.
+    private static readonly int[] PlantasValidas =
+        Edificio.PlantasReservables.ToArray();
+
     public async Task<IEnumerable<Espacio>> GetAllAsync()
-        => await context.Espacios.ToListAsync();
+        => await context.Espacios
+            .Where(e => PlantasValidas.Contains(e.Planta.Valor)
+                     && TiposReservables.Contains(e.TipoFisico))
+            .ToListAsync();
 
     public async Task<IEnumerable<Espacio>> SearchAsync(string? id, string? floor, string? category, int? capacity)
     {
-        var query = context.Espacios.AsQueryable();
+        var query = context.Espacios
+            .Where(e => PlantasValidas.Contains(e.Planta.Valor)
+                     && TiposReservables.Contains(e.TipoFisico));
 
         if (!string.IsNullOrWhiteSpace(id))
             query = query.Where(e => e.CodigoEspacio.Contains(id));
 
         if (!string.IsNullOrWhiteSpace(floor))
         {
-            int parsedFloor = floor.Equals("S1", StringComparison.OrdinalIgnoreCase) ? -1 : 
-                              int.TryParse(floor, out var f) ? f : int.MinValue;
-            
-            if (parsedFloor != int.MinValue)
+            int parsedFloor = int.TryParse(floor, out var f) ? f : int.MinValue;
+
+            if (parsedFloor != int.MinValue && PlantasValidas.Contains(parsedFloor))
             {
                 var plantaTarget = Planta.De(parsedFloor);
                 query = query.Where(e => e.Planta == plantaTarget);

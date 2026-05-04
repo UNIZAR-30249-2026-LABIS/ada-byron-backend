@@ -1,0 +1,1 @@
+using System; using System.Collections.Generic; using System.Text.Json; enum Rol { Estudiante, Gerente } class Program { static void Main() { try { var roles = JsonSerializer.Deserialize<List<Rol>>("[\"Gerente\"]"); Console.WriteLine(roles[0]); } catch (Exception ex) { Console.WriteLine("Error: " + ex.Message); } } }

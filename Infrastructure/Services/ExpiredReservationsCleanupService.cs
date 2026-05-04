@@ -32,7 +32,6 @@ public class ExpiredReservationsCleanupService(
             {
                 logger.LogInformation("Iniciando tarea de limpieza de reservas inválidas expiradas...");
 
-                // ⚠️ TRUCO DE SENIOR: Usar IServiceScopeFactory para resolver Scoped services dentro de un Singleton (BackgroundService)
                 using var scope = serviceScopeFactory.CreateScope();
                 var useCase = scope.ServiceProvider.GetRequiredService<CleanExpiredReservationsUseCase>();
                 
