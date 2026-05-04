@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 namespace AdaByron.Domain.Aggregates.SpaceAggregate;
@@ -23,15 +21,11 @@ public sealed class Espacio
     public TipoEspacio           TipoFisico       { get; }
     public TipoEspacio           CategoriaReserva { get; private set; }
     public bool                  EsReservable     { get; private set; }
-    [JsonIgnore]
     public string                HorarioReservaJson { get; private set; } = HorarioReservaDia.Serialize(HorarioReservaDia.CrearHorarioPorDefecto());
     public Departamento          Departamento     { get; private set; } = Departamento.Null;
     public TipoAsignacionEspacio TipoAsignacion   { get; private set; } = TipoAsignacionEspacio.Eina;
-    [JsonIgnore]
     public string PersonasAsignadasJson { get; private set; } = "[]";
-    [NotMapped]
     public IReadOnlyCollection<HorarioReservaDia> HorarioReserva => HorarioReservaDia.Deserialize(HorarioReservaJson);
-    [NotMapped]
     public IReadOnlyCollection<string> PersonasAsignadas => DeserializeAssignedPeople(PersonasAsignadasJson);
 
     /// <summary>

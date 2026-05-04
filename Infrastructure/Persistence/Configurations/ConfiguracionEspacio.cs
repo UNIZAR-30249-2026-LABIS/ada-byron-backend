@@ -100,6 +100,10 @@ public class ConfiguracionEspacio : IEntityTypeConfiguration<Espacio>
         builder.Metadata.FindNavigation(nameof(Espacio.Reservas))?
                .SetPropertyAccessMode(PropertyAccessMode.Field);
 
+        // Computed properties derived from JSON columns — not stored independently
+        builder.Ignore(e => e.HorarioReserva);
+        builder.Ignore(e => e.PersonasAsignadas);
+
         // ── Índices para PostGIS y Búsquedas ─────────────────────────────────
         builder.HasIndex("Ubicacion").HasMethod("GIST");
     }
