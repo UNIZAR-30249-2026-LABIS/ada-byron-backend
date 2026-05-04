@@ -1,0 +1,58 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (.NET 9)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9.0.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # Cache NuGet packages para acelerar las ejecuciones posteriores
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore AdaByron.sln
+
+      - name: Build (Release)
+        run: dotnet build AdaByron.sln --no-restore --configuration Release
+
+      # Los tests de integración (ReservaConcurrencyTests) usan Testcontainers,
+      # que levanta postgis/postgis:15-3.3 automáticamente vía el Docker daemon
+      # que incluye ubuntu-latest. No se necesita un service container externo.
+      - name: Run all tests
+        run: >
+          dotnet test AdaByron.sln
+          --no-build
+          --configuration Release
+          --verbosity normal
+          --logger "trx;LogFileName=results.trx"
+          --results-directory TestResults
+
+      # Publica el informe de tests en la pestaña Summary del workflow
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: xUnit Tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
