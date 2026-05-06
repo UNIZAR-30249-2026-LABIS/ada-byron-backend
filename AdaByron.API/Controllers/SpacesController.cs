@@ -3,14 +3,32 @@ using AdaByron.Application.Ports.Out;
 using AdaByron.Domain.Interfaces;
 using AdaByron.Domain.Aggregates.SpaceAggregate;
 using AdaByron.Application.UseCases.Spaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdaByron.API.Controllers;
 
 [ApiController]
 [Route("api/spaces")]
-public class SpacesController(IEspacioRepository espacios, GetFilteredSpacesUseCase getFilteredSpacesUseCase) : ControllerBase
+[Authorize]
+public class SpacesController(
+    IEspacioRepository espacios,
+    GetFilteredSpacesUseCase getFilteredSpacesUseCase,
+    IEdificioConfigRepository edificioConfig) : ControllerBase
 {
+    /// <summary>
+    /// Devuelve el porcentaje de ocupación global del edificio.
+    /// Disponible para todos los usuarios autenticados (no solo gerentes) porque
+    /// es necesario para calcular el aforo efectivo en la búsqueda de espacios.
+    /// </summary>
+    [HttpGet("building-config")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBuildingConfig()
+    {
+        var config = await edificioConfig.GetConfigAsync();
+        return Ok(new { porcentajeOcupacion = config?.PorcentajeOcupacion ?? 100.0 });
+    }
+
     /// <summary>
     /// Lista todos los espacios del edificio Ada Byron registrados en el sistema.
     /// </summary>

@@ -63,6 +63,16 @@ public class ReservaRepository(AplicacionDbContext context) : IReservaRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Reserva>> GetPotencialmenteInvalidasFuturasByEspacioAsync(string codigoEspacio)
+    {
+        var now = DateTime.UtcNow;
+        return await context.Reservas
+            .Where(r => r.EspacioId == codigoEspacio
+                     && r.Estado == EstadoReserva.PotencialmenteInvalida
+                     && r.Franja.Fin > now)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Reserva>> GetExpiredPotentiallyInvalidAsync(DateTime beforeDate)
     {
         return await context.Reservas

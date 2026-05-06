@@ -37,7 +37,9 @@ public class EspacioTests
 
     private static Reserva CrearReservaDeIntento(Espacio espacio, int asistentes)
     {
-        var franja = new FranjaHoraria(DateTime.Now.AddHours(1), DateTime.Now.AddHours(2));
+        // Fecha fija en el futuro para evitar que cruzar medianoche falle la validación de horario
+        var inicio = new DateTime(2030, 6, 16, 10, 0, 0);
+        var franja = new FranjaHoraria(inicio, inicio.AddHours(1));
         return new Reserva("test@unizar.es", espacio.CodigoEspacio, franja, asistentes);
     }
 

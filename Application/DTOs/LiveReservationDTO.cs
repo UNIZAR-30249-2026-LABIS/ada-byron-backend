@@ -8,5 +8,6 @@ public record LiveReservationDTO(
     DateTime Inicio,
     DateTime Fin,
     string Estado,
-    bool EsPotencialmenteInvalida
+    bool EsPotencialmenteInvalida,
+    int NumeroAsistentes
 );

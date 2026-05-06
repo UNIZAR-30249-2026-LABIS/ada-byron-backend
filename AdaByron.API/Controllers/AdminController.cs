@@ -37,10 +37,10 @@ public class AdminController(
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateConfig([FromBody] UpdateConfigDTO request)
     {
-        try 
+        try
         {
-            await updateConfigUseCase.ExecuteAsync(request);
-            return Ok(new { PorcentajeOcupacion = request.PorcentajeOcupacion });
+            int marcadas = await updateConfigUseCase.ExecuteAsync(request);
+            return Ok(new { PorcentajeOcupacion = request.PorcentajeOcupacion, ReservasMarcadasComoInvalidas = marcadas });
         }
         catch (ExcepcionDominio ex)
         {

@@ -48,6 +48,8 @@ public sealed class MiReservaDTO
     public DateTime Fin { get; set; }
     public string Estado { get; set; } = string.Empty;
     public int NumeroAsistentes { get; set; }
+    public string? TipoUso { get; set; }
+    public string? Descripcion { get; set; }
 }
 
 /// <summary>

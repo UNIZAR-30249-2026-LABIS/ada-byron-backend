@@ -5,6 +5,7 @@ using AdaByron.Domain.Aggregates.ReservationAggregate;
 using AdaByron.Domain.Aggregates.PersonAggregate;
 using AdaByron.Domain.Exceptions;
 using AdaByron.Domain.Interfaces;
+using DomainTipoUso = AdaByron.Domain.Aggregates.ReservationAggregate.TipoUso;
 
 namespace AdaByron.Application.UseCases.Reservas;
 
@@ -47,12 +48,22 @@ public class CrearReservaUseCase(
             var espacio = await espacios.GetByCodigoAsync(request.CodigoEspacio)
                 ?? throw new ExcepcionDominio($"Espacio '{request.CodigoEspacio}' no encontrado.");
 
+            // Parsear TipoUso desde string (viene del frontend como texto)
+            DomainTipoUso? tipoUso = null;
+            if (!string.IsNullOrWhiteSpace(request.TipoUso) &&
+                Enum.TryParse<DomainTipoUso>(request.TipoUso, ignoreCase: true, out var parsed))
+            {
+                tipoUso = parsed;
+            }
+
             // 2. Crear objeto de intención
             var nuevaReserva = new Reserva(
                 personaId:        persona.Email,
                 espacioId:        espacio.CodigoEspacio,
                 franja:           franja,
-                numeroAsistentes: request.NumeroAsistentes);
+                numeroAsistentes: request.NumeroAsistentes,
+                tipoUso:          tipoUso,
+                descripcion:      request.Descripcion);
 
             // 3. El AR gestiona la creación y valida todas las Reglas F (HU-13, 14, 15)
             // Se le pasan las reservas existentes para la validación horaria local.
@@ -73,7 +84,9 @@ public class CrearReservaUseCase(
                 Inicio:           nuevaReserva.Franja.Inicio,
                 Fin:              nuevaReserva.Franja.Fin,
                 NumeroAsistentes: nuevaReserva.NumeroAsistentes,
-                Estado:           nuevaReserva.Estado.ToString());
+                Estado:           nuevaReserva.Estado.ToString(),
+                TipoUso:          nuevaReserva.TipoUso?.ToString(),
+                Descripcion:      nuevaReserva.Descripcion);
         }
         catch
         {

@@ -43,8 +43,8 @@ public class CrearReservaUseCaseTests
         var req = new CrearReservaRequestDTO(
             CodigoEspacio: "A-01",
             NumeroAsistentes: 10,
-            Inicio: DateTime.Now.AddHours(1),
-            Fin: DateTime.Now.AddHours(2)
+            Inicio: new DateTime(2030, 6, 16, 10, 0, 0),
+            Fin: new DateTime(2030, 6, 16, 11, 0, 0)
         );
 
         await Assert.ThrowsAsync<ExcepcionDominio>(() => _useCase.ExecuteAsync("test@unizar.es", req));
@@ -61,11 +61,13 @@ public class CrearReservaUseCaseTests
         _configMock.Setup(a => a.GetConfigAsync()).ReturnsAsync(new EdificioConfig("AdaByron", 100.0));
         _reservasMock.Setup(r => r.GetByEspacioAsync("A-01")).ReturnsAsync(new List<Reserva>());
 
+        // Fecha fija en el futuro (evita que cruzar medianoche rompa la validación de horario)
+        var inicio = new DateTime(2030, 6, 16, 10, 0, 0);
         var req = new CrearReservaRequestDTO(
             CodigoEspacio: "A-01",
             NumeroAsistentes: 20,
-            Inicio: DateTime.Now.AddDays(1),
-            Fin: DateTime.Now.AddDays(1).AddHours(2)
+            Inicio: inicio,
+            Fin: inicio.AddHours(2)
         );
 
         var response = await _useCase.ExecuteAsync("docente@unizar.es", req);

@@ -26,7 +26,9 @@ public class GetMisReservasUseCase(
             Inicio           = r.Franja.Inicio,
             Fin              = r.Franja.Fin,
             Estado           = r.Estado.ToString(),
-            NumeroAsistentes = r.NumeroAsistentes
+            NumeroAsistentes = r.NumeroAsistentes,
+            TipoUso          = r.TipoUso?.ToString(),
+            Descripcion      = r.Descripcion
         });
     }
 }

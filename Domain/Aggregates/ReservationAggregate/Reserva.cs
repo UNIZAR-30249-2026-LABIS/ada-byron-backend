@@ -18,11 +18,18 @@ public sealed class Reserva
     public DateTime       FechaEstadoModificado { get; private set; }
     public uint           Version           { get; private set; }
 
+    /// <summary>Tipo de uso declarado por el solicitante (Sección E del enunciado).</summary>
+    public TipoUso?       TipoUso           { get; private set; }
+
+    /// <summary>Descripción o motivo libre de la reserva (Sección E del enunciado).</summary>
+    public string?        Descripcion       { get; private set; }
+
     // Requerido por EF Core (HU-15)
     private Reserva() { }
 
     [SetsRequiredMembers]
-    public Reserva(string personaId, string espacioId, FranjaHoraria franja, int numeroAsistentes)
+    public Reserva(string personaId, string espacioId, FranjaHoraria franja, int numeroAsistentes,
+                   TipoUso? tipoUso = null, string? descripcion = null)
     {
         if (string.IsNullOrWhiteSpace(personaId))
             throw new ExcepcionDominio("El identificador de persona no puede estar vacío.");
@@ -33,11 +40,16 @@ public sealed class Reserva
         if (numeroAsistentes <= 0)
             throw new ExcepcionDominio("El número de asistentes debe ser positivo.");
 
+        if (descripcion is { Length: > 500 })
+            throw new ExcepcionDominio("La descripción no puede superar los 500 caracteres.");
+
         Id               = Guid.NewGuid();
         PersonaId        = personaId.Trim().ToLowerInvariant();
         EspacioId        = espacioId.Trim().ToUpperInvariant();
         Franja           = franja ?? throw new ExcepcionDominio("La franja horaria es obligatoria.");
         NumeroAsistentes = numeroAsistentes;
+        TipoUso          = tipoUso;
+        Descripcion      = descripcion?.Trim();
         Estado           = EstadoReserva.Pendiente;
         FechaEstadoModificado = DateTime.UtcNow;
     }
@@ -45,7 +57,8 @@ public sealed class Reserva
     // Constructor para reconstituir desde persistencia
     [SetsRequiredMembers]
     private Reserva(Guid id, string personaId, string espacioId, FranjaHoraria franja,
-                    int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado, uint version)
+                    int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado, uint version,
+                    TipoUso? tipoUso, string? descripcion)
     {
         Id               = id;
         PersonaId        = personaId;
@@ -55,11 +68,15 @@ public sealed class Reserva
         Estado           = estado;
         FechaEstadoModificado = fechaEstadoModificado;
         Version          = version;
+        TipoUso          = tipoUso;
+        Descripcion      = descripcion;
     }
 
     public static Reserva Reconstituir(Guid id, string personaId, string espacioId,
-                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado, DateTime fechaEstadoModificado, uint version = 0)
-        => new(id, personaId, espacioId, franja, numeroAsistentes, estado, fechaEstadoModificado, version);
+                                       FranjaHoraria franja, int numeroAsistentes, EstadoReserva estado,
+                                       DateTime fechaEstadoModificado, uint version = 0,
+                                       TipoUso? tipoUso = null, string? descripcion = null)
+        => new(id, personaId, espacioId, franja, numeroAsistentes, estado, fechaEstadoModificado, version, tipoUso, descripcion);
 
     public void Aceptar()
     {
@@ -116,6 +133,20 @@ public sealed class Reserva
             throw new ExcepcionDominio("La reserva ya está cancelada.");
 
         Estado = EstadoReserva.Rescindida;
+        FechaEstadoModificado = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Restauración automática: cuando el aforo efectivo vuelve a ser suficiente para esta reserva
+    /// (p.ej. el Gerente sube el % global), la reserva vuelve a Aceptada sin intervención manual.
+    /// Solo aplica a reservas PotencialmenteInvalida con franja futura.
+    /// </summary>
+    public void RestablecerAceptada()
+    {
+        if (Estado != EstadoReserva.PotencialmenteInvalida)
+            return; // Idempotente
+
+        Estado = EstadoReserva.Aceptada;
         FechaEstadoModificado = DateTime.UtcNow;
     }
 

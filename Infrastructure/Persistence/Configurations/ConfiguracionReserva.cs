@@ -29,6 +29,16 @@ public class ConfiguracionReserva : IEntityTypeConfiguration<Reserva>
         builder.Property(r => r.NumeroAsistentes)
                .IsRequired();
 
+        // Tipo de uso (Sección E): enum opcional → guardado como string
+        builder.Property(r => r.TipoUso)
+               .HasConversion<string>()
+               .HasColumnName("tipo_uso")
+               .HasMaxLength(30);
+
+        builder.Property(r => r.Descripcion)
+               .HasColumnName("descripcion")
+               .HasMaxLength(500);
+
         // Estado persiste como string para legibilidad en la BD.
         // Longitud 50 para acomodar el valor más largo: PotencialmenteInvalida (22 chars).
         builder.Property(r => r.Estado)

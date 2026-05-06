@@ -1,6 +1,7 @@
 using AdaByron.Application.DTOs;
 using AdaByron.Application.Ports.Out;
 using AdaByron.Application.UseCases.Admin;
+using AdaByron.Application.UseCases.Reservations;
 using AdaByron.Domain.Aggregates.PersonAggregate;
 using AdaByron.Domain.Aggregates.ReservationAggregate;
 using AdaByron.Domain.Aggregates.SpaceAggregate;
@@ -15,12 +16,24 @@ namespace AdaByron.Application.Tests;
 public class UpdateBuildingConfigUseCaseTests
 {
     private readonly Mock<IEdificioConfigRepository> _configRepoMock = new();
-    private readonly Mock<IUnitOfWork> _uowMock = new();
+    private readonly Mock<IEspacioRepository>        _espaciosMock   = new();
+    private readonly Mock<IReservaRepository>        _reservasMock   = new();
+    private readonly Mock<IUnitOfWork>               _uowMock        = new();
     private readonly UpdateBuildingConfigUseCase _useCase;
 
     public UpdateBuildingConfigUseCaseTests()
     {
-        _useCase = new UpdateBuildingConfigUseCase(_configRepoMock.Object, _uowMock.Object);
+        // ReevaluarReservasEspacioUseCase necesita IReservaRepository e IEdificioConfigRepository
+        var reevaluar = new ReevaluarReservasEspacioUseCase(_reservasMock.Object, _configRepoMock.Object);
+
+        // Por defecto GetAllAsync devuelve lista vacía para no romper el bucle de reevaluación
+        _espaciosMock.Setup(e => e.GetAllAsync()).ReturnsAsync(new List<Espacio>());
+
+        _useCase = new UpdateBuildingConfigUseCase(
+            _configRepoMock.Object,
+            _espaciosMock.Object,
+            reevaluar,
+            _uowMock.Object);
     }
 
     [Fact]
@@ -38,7 +51,9 @@ public class UpdateBuildingConfigUseCaseTests
         var sala = new Espacio("A-01", "Aula Magna", Planta.De(1), Aforo.De(40), TipoEspacio.Aula, null);
         var config = new EdificioConfig("AdaByron", 25);
         var docente = new Persona("docente@unizar.es", "Juan", "Perez", Rol.DocenteInvestigador, Departamento.Informatica);
-        var reserva = new Reserva(docente.Email, sala.CodigoEspacio, new FranjaHoraria(DateTime.Now.AddHours(1), DateTime.Now.AddHours(2)), 11);
+        // Fecha fija en el futuro (evita que cruzar medianoche rompa la validación de horario)
+        var inicio = new DateTime(2030, 6, 16, 10, 0, 0);
+        var reserva = new Reserva(docente.Email, sala.CodigoEspacio, new FranjaHoraria(inicio, inicio.AddHours(1)), 11);
 
         // Assert: una sala de 40 plazas al 25% solo permite 10 personas, si metemos 11 debe petar
         Action reservaAction = () => sala.AddReserva(reserva, config, docente);

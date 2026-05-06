@@ -165,4 +165,62 @@ public class PoliticaPermisosTests
         var despacho = CrearEspacio(TipoEspacio.Despacho);
         Assert.Throws<ExcepcionPermisos>(() => Politica.VerificarPermisos(conserje, despacho));
     }
+
+    // ── Dual-role: Gerente + DocenteInvestigador ──────────────────────────────
+    // Se aplica el permiso más permisivo (Gerente): puede reservar todo excepto Despacho.
+
+    /// <summary>
+    /// Un Gerente+DocenteInvestigador hereda los permisos de Gerente (más permisivos):
+    /// puede reservar SalaComun, Aula, Seminario y Laboratorio —incluso de otro departamento—.
+    /// </summary>
+    [Theory]
+    [InlineData(TipoEspacio.SalaComun)]
+    [InlineData(TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.Laboratorio)]
+    public void GerenteYDocente_PuedeReservar_TodosExceptoDespacho(TipoEspacio categoria)
+    {
+        // Sin departamento asignado al espacio → un DocenteInvestigador puro no podría el Laboratorio,
+        // pero el rol Gerente lo permite.
+        var dual    = CrearPersona(Rol.DocenteInvestigador, "Informática", esGerente: true);
+        var espacio = CrearEspacio(categoria, "Ing. de Sistemas e Ing. Electrónica y Comunicaciones");
+
+        Politica.VerificarPermisos(dual, espacio); // No debe lanzar
+    }
+
+    /// <summary>
+    /// Aunque tenga rol DocenteInvestigador, el Gerente+DocenteInvestigador
+    /// tampoco puede reservar un Despacho (límite del Gerente).
+    /// </summary>
+    [Fact]
+    public void GerenteYDocente_NoPuede_Despacho()
+    {
+        var dual     = CrearPersona(Rol.DocenteInvestigador, "Informática", esGerente: true);
+        var despacho = CrearEspacio(TipoEspacio.Despacho);
+
+        Assert.Throws<ExcepcionPermisos>(() => Politica.VerificarPermisos(dual, despacho));
+    }
+
+    /// <summary>
+    /// Caso clave: un DocenteInvestigador puro NO puede reservar un laboratorio
+    /// de otro departamento, pero un Gerente+DocenteInvestigador SÍ puede,
+    /// porque se aplica el permiso más permisivo (Gerente).
+    /// </summary>
+    [Fact]
+    public void GerenteYDocente_PuedeReservar_LaboratorioDeOtroDepartamento()
+    {
+        var dualRole  = CrearPersona(Rol.DocenteInvestigador, "Informática", esGerente: true);
+        var labAjeno  = CrearEspacio(TipoEspacio.Laboratorio, "Ing. de Sistemas e Ing. Electrónica y Comunicaciones");
+
+        Politica.VerificarPermisos(dualRole, labAjeno); // Gerente puede: no debe lanzar
+    }
+
+    [Fact]
+    public void DocenteInvestigadorPuro_NoPuede_LaboratorioDeOtroDepartamento()
+    {
+        var docentePuro = CrearPersona(Rol.DocenteInvestigador, "Informática");
+        var labAjeno    = CrearEspacio(TipoEspacio.Laboratorio, "Ing. de Sistemas e Ing. Electrónica y Comunicaciones");
+
+        Assert.Throws<ExcepcionPermisos>(() => Politica.VerificarPermisos(docentePuro, labAjeno));
+    }
 }
