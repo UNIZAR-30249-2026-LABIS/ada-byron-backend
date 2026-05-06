@@ -25,7 +25,13 @@ public class CrearReservaUseCase(
         var persona = await personas.GetByEmailAsync(emailFromJwt)
             ?? throw new ExcepcionUsuarioNoRegistrado(emailFromJwt);
 
-        var franja = new FranjaHoraria(request.Inicio, request.Fin);
+        // El frontend envía hora local sin zona horaria (Kind=Unspecified).
+        // La validación del horario del espacio ya usa esa hora local correctamente.
+        // Antes de persistir, se marca como UTC para que Npgsql pueda escribir
+        // en la columna timestamptz sin error (el valor no cambia, solo el Kind).
+        var inicio = DateTime.SpecifyKind(request.Inicio, DateTimeKind.Utc);
+        var fin    = DateTime.SpecifyKind(request.Fin,    DateTimeKind.Utc);
+        var franja = new FranjaHoraria(inicio, fin);
         var configEdificio = await configRepo.GetConfigAsync() 
                              ?? new EdificioConfig("AdaByron", 100); // 100% por defecto si no hay nada en BD
 

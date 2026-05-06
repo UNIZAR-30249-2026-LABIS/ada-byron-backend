@@ -3,6 +3,7 @@ using AdaByron.Application.UseCases.Admin;
 using AdaByron.Application.UseCases.Reservations;
 using AdaByron.Application.UseCases.Spaces;
 using AdaByron.Domain.Exceptions;
+using AdaByron.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,8 +15,20 @@ namespace AdaByron.API.Controllers;
 public class AdminController(
     UpdateBuildingConfigUseCase updateConfigUseCase,
     UpdateSpaceUseCase updateSpaceUseCase,
-    GetLiveReservationsUseCase getLiveReservationsUseCase) : ControllerBase
+    GetLiveReservationsUseCase getLiveReservationsUseCase,
+    IEdificioConfigRepository configRepo) : ControllerBase
 {
+    /// <summary>
+    /// Devuelve la configuración global actual del edificio (porcentaje de aforo).
+    /// </summary>
+    [HttpGet("config")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetConfig()
+    {
+        var config = await configRepo.GetConfigAsync();
+        return Ok(new { PorcentajeOcupacion = config?.PorcentajeOcupacion ?? 100.0 });
+    }
+
     /// <summary>
     /// Endpoint para modificar el porcentaje de aforo del edificio dinámicamente (PBI 6).
     /// </summary>
