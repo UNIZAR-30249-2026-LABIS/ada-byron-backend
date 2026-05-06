@@ -43,6 +43,12 @@ public static class InfrastructureExtensions
         // Servicio de Notificaciones en Tiempo Real (SignalR)
         services.AddScoped<INotificationService, AdaByron.Infrastructure.Realtime.SignalRNotificationService>();
 
+        // IUserIdProvider personalizado: el JWT solo contiene ClaimTypes.Email (sin NameIdentifier),
+        // por lo que el DefaultUserIdProvider devuelve null y Clients.User() no enruta.
+        // Registrar ANTES de AddSignalR() para que TryAddSingleton no sobreescriba este registro.
+        services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider,
+                              AdaByron.Infrastructure.Realtime.EmailUserIdProvider>();
+
         // PBI-14: Servicio en segundo plano para limpiar reservas expiradas
         services.AddHostedService<AdaByron.Infrastructure.Services.ExpiredReservationsCleanupService>();
 
