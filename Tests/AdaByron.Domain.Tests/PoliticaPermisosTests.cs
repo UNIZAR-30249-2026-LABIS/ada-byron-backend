@@ -98,6 +98,14 @@ public class PoliticaPermisosTests
     }
 
     [Fact]
+    public void TecnicoLab_PuedeReservar_LaboratorioGeneralEina()
+    {
+        var tecnico = CrearPersona(Rol.TecnicoLaboratorio, "Informática");
+        var lab = CrearEspacio(TipoEspacio.Laboratorio);
+        Politica.VerificarPermisos(tecnico, lab);
+    }
+
+    [Fact]
     public void TecnicoLab_NoPuede_LaboratorioDistintoDepartamento()
     {
         var tecnico = CrearPersona(Rol.TecnicoLaboratorio, "Informática");
@@ -133,6 +141,14 @@ public class PoliticaPermisosTests
     {
         var docente = CrearPersona(Rol.DocenteInvestigador, "Informática");
         var lab = CrearEspacio(TipoEspacio.Laboratorio, "Informática");
+        Politica.VerificarPermisos(docente, lab);
+    }
+
+    [Fact]
+    public void DocenteInvestigador_PuedeReservar_LaboratorioGeneralEina()
+    {
+        var docente = CrearPersona(Rol.DocenteInvestigador, "Informática");
+        var lab = CrearEspacio(TipoEspacio.Laboratorio);
         Politica.VerificarPermisos(docente, lab);
     }
 

@@ -25,7 +25,7 @@ public sealed class PoliticaReserva
             {
                 TipoEspacio.SalaComun   => true,
                 TipoEspacio.Seminario   => true,
-                TipoEspacio.Laboratorio => persona.Departamento.IsSameAs(espacio.Departamento),
+                TipoEspacio.Laboratorio => EsLaboratorioGeneral(espacio) || persona.Departamento.IsSameAs(espacio.Departamento),
                 _                       => false
             },
             Rol.InvestigadorContratado or Rol.DocenteInvestigador => espacio.CategoriaReserva switch
@@ -33,7 +33,7 @@ public sealed class PoliticaReserva
                 TipoEspacio.SalaComun   => true,
                 TipoEspacio.Aula        => true,
                 TipoEspacio.Seminario   => true,
-                TipoEspacio.Laboratorio => persona.Departamento.IsSameAs(espacio.Departamento),
+                TipoEspacio.Laboratorio => EsLaboratorioGeneral(espacio) || persona.Departamento.IsSameAs(espacio.Departamento),
                 _                       => false
             },
             Rol.Conserje => espacio.CategoriaReserva != TipoEspacio.Despacho,
@@ -44,4 +44,7 @@ public sealed class PoliticaReserva
             throw new ExcepcionPermisos(
                 $"El rol '{persona.Rol}' no tiene permiso para reservar espacios del tipo '{espacio.CategoriaReserva}'.");
     }
+
+    private static bool EsLaboratorioGeneral(Espacio espacio) =>
+        espacio.TipoAsignacion == TipoAsignacionEspacio.Eina || espacio.Departamento.IsNull;
 }

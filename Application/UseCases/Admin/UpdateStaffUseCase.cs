@@ -10,7 +10,7 @@ namespace AdaByron.Application.UseCases.Admin;
 
 /// <summary>
 /// Actualiza los datos administrativos (rol, departamento, flag gerente) de una persona existente.
-/// Si el departamento cambia, cancela las reservas futuras que ya no son accesibles
+/// Si el departamento cambia, elimina las reservas futuras que ya no son accesibles
 /// para la nueva configuración y notifica al usuario vía SignalR.
 /// </summary>
 public class UpdateStaffUseCase(
@@ -73,21 +73,19 @@ public class UpdateStaffUseCase(
             }
             catch (ExcepcionPermisos)
             {
-                reserva.ForzarCancelacion();
                 canceladas.Add(reserva);
             }
         }
 
         if (canceladas.Count == 0) return;
 
-        await reservas.UpdateRangeAsync(canceladas);
-
         foreach (var reserva in canceladas)
         {
+            await reservas.DeleteAsync(reserva.Id);
             await notifications.NotifyCancellationAsync(
                 persona.Email,
-                $"Tu reserva en el espacio {reserva.EspacioId} ha sido cancelada automáticamente " +
-                $"porque ya no tienes permiso de acceso tras el cambio de departamento.");
+                $"Tu reserva en el espacio {reserva.EspacioId} ha sido eliminada automáticamente " +
+                "porque ya no tienes permiso de acceso tras el cambio de departamento.");
         }
     }
 
