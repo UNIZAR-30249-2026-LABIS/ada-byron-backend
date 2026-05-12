@@ -60,6 +60,7 @@ public sealed class Espacio
     public void UpdateDetails(string nombre, Planta planta, Aforo aforo, TipoEspacio categoria, bool esReservable, IEnumerable<HorarioReservaDia>? horarioReserva = null)
     {
         if (string.IsNullOrWhiteSpace(nombre)) throw new ExcepcionDominio("El nombre no puede estar vacío.");
+        ValidarCambioCategoria(categoria);
         Nombre = nombre.Trim();
         Planta = planta;
         Aforo = aforo;
@@ -139,6 +140,8 @@ public sealed class Espacio
             throw new ExcepcionDominio("La designación del espacio no puede estar vacía.");
         if (nuevoNombre.Trim().Length > 200)
             throw new ExcepcionDominio("La designación no puede superar los 200 caracteres.");
+
+        ValidarCambioCategoria(nuevaCategoria);
 
         Nombre           = nuevoNombre.Trim();
         Aforo            = nuevoAforo  ?? throw new ExcepcionDominio("El aforo es obligatorio.");
@@ -224,6 +227,45 @@ public sealed class Espacio
         if (TipoFisico == TipoEspacio.Despacho && tipo == TipoAsignacionEspacio.Eina)
         {
             throw new ExcepcionDominio("Los despachos deben asignarse a un departamento o a una o más personas.");
+        }
+    }
+
+    private void ValidarCambioCategoria(TipoEspacio nuevaCategoria)
+    {
+        if (nuevaCategoria == CategoriaReserva)
+            return;
+
+        var permitido = TipoFisico switch
+        {
+            TipoEspacio.Aula => nuevaCategoria is
+                TipoEspacio.Aula or
+                TipoEspacio.Laboratorio or
+                TipoEspacio.Seminario or
+                TipoEspacio.SalaComun,
+
+            TipoEspacio.Laboratorio => nuevaCategoria is
+                TipoEspacio.Aula or
+                TipoEspacio.Laboratorio or
+                TipoEspacio.Seminario,
+
+            TipoEspacio.Seminario => nuevaCategoria is
+                TipoEspacio.Aula or
+                TipoEspacio.Laboratorio or
+                TipoEspacio.Seminario or
+                TipoEspacio.SalaComun,
+
+            TipoEspacio.SalaComun => nuevaCategoria is
+                TipoEspacio.Seminario or
+                TipoEspacio.SalaComun,
+
+            TipoEspacio.Despacho => false,
+            _ => false
+        };
+
+        if (!permitido)
+        {
+            throw new ExcepcionCambioCategoria(
+                $"No se puede cambiar la categoría de reserva de un espacio físico '{TipoFisico}' a '{nuevaCategoria}'.");
         }
     }
 

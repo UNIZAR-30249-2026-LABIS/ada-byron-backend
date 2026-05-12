@@ -10,7 +10,7 @@ namespace AdaByron.Application.UseCases.Admin;
 
 /// <summary>
 /// Actualiza los datos administrativos (rol, departamento, flag gerente) de una persona existente.
-/// Si el departamento cambia, elimina las reservas futuras que ya no son accesibles
+/// Si el departamento cambia, marca como potencialmente inválidas las reservas futuras que ya no son accesibles
 /// para la nueva configuración y notifica al usuario vía SignalR.
 /// </summary>
 public class UpdateStaffUseCase(
@@ -40,12 +40,12 @@ public class UpdateStaffUseCase(
         bool rolCambio  = rolAnterior != persona.Rol;
 
         if (deptCambio || rolCambio)
-            await CancelarReservasInvalidadasAsync(persona);
+            await MarcarReservasInvalidadasAsync(persona);
 
         return CreateStaffUseCase.ToDTO(persona);
     }
 
-    private async Task CancelarReservasInvalidadasAsync(Persona persona)
+    private async Task MarcarReservasInvalidadasAsync(Persona persona)
     {
         var politica     = new PoliticaReserva();
         var misReservas  = await reservas.GetByPersonaAsync(persona.Email);
@@ -60,7 +60,7 @@ public class UpdateStaffUseCase(
 
         if (activas.Count == 0) return;
 
-        var canceladas = new List<Reserva>();
+        var marcadas = new List<Reserva>();
 
         foreach (var reserva in activas)
         {
@@ -73,18 +73,20 @@ public class UpdateStaffUseCase(
             }
             catch (ExcepcionPermisos)
             {
-                canceladas.Add(reserva);
+                reserva.MarcarComoPotencialmenteInvalida();
+                marcadas.Add(reserva);
             }
         }
 
-        if (canceladas.Count == 0) return;
+        if (marcadas.Count == 0) return;
 
-        foreach (var reserva in canceladas)
+        await reservas.UpdateRangeAsync(marcadas);
+
+        foreach (var reserva in marcadas)
         {
-            await reservas.DeleteAsync(reserva.Id);
             await notifications.NotifyCancellationAsync(
                 persona.Email,
-                $"Tu reserva en el espacio {reserva.EspacioId} ha sido eliminada automáticamente " +
+                $"Tu reserva en el espacio {reserva.EspacioId} ha quedado marcada como potencialmente inválida " +
                 "porque ya no tienes permiso de acceso tras el cambio de departamento.");
         }
     }

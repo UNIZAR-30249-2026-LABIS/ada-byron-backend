@@ -43,6 +43,63 @@ public class EspacioTests
         return new Reserva("test@unizar.es", espacio.CodigoEspacio, franja, asistentes);
     }
 
+    // ── Pruebas de mutabilidad de categoría (Regla C) ───────────────────────
+
+    [Theory]
+    [InlineData(TipoEspacio.Aula, TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.Aula, TipoEspacio.Laboratorio)]
+    [InlineData(TipoEspacio.Aula, TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.Aula, TipoEspacio.SalaComun)]
+    [InlineData(TipoEspacio.Laboratorio, TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.Laboratorio, TipoEspacio.Laboratorio)]
+    [InlineData(TipoEspacio.Laboratorio, TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.Seminario, TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.Seminario, TipoEspacio.Laboratorio)]
+    [InlineData(TipoEspacio.Seminario, TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.Seminario, TipoEspacio.SalaComun)]
+    [InlineData(TipoEspacio.SalaComun, TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.SalaComun, TipoEspacio.SalaComun)]
+    public void Actualizar_CambioCategoriaPermitido_ActualizaCategoriaReserva(TipoEspacio tipoFisico, TipoEspacio categoriaReserva)
+    {
+        var espacio = CrearEspacio(tipoFisico, 30);
+
+        espacio.Actualizar(
+            "Sala Test",
+            Aforo.De(30),
+            Planta.De(1),
+            categoriaReserva,
+            true,
+            HorarioReservaDia.CrearHorarioPorDefecto());
+
+        Assert.Equal(categoriaReserva, espacio.CategoriaReserva);
+        Assert.Equal(tipoFisico, espacio.TipoFisico);
+    }
+
+    [Theory]
+    [InlineData(TipoEspacio.Aula, TipoEspacio.Despacho)]
+    [InlineData(TipoEspacio.Laboratorio, TipoEspacio.SalaComun)]
+    [InlineData(TipoEspacio.Laboratorio, TipoEspacio.Despacho)]
+    [InlineData(TipoEspacio.Seminario, TipoEspacio.Despacho)]
+    [InlineData(TipoEspacio.SalaComun, TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.SalaComun, TipoEspacio.Laboratorio)]
+    [InlineData(TipoEspacio.SalaComun, TipoEspacio.Despacho)]
+    [InlineData(TipoEspacio.Despacho, TipoEspacio.Aula)]
+    [InlineData(TipoEspacio.Despacho, TipoEspacio.Laboratorio)]
+    [InlineData(TipoEspacio.Despacho, TipoEspacio.Seminario)]
+    [InlineData(TipoEspacio.Despacho, TipoEspacio.SalaComun)]
+    public void Actualizar_CambioCategoriaNoPermitido_LanzaExcepcionCambioCategoria(TipoEspacio tipoFisico, TipoEspacio categoriaReserva)
+    {
+        var espacio = CrearEspacio(tipoFisico, 30);
+
+        Assert.Throws<ExcepcionCambioCategoria>(() => espacio.Actualizar(
+            "Sala Test",
+            Aforo.De(30),
+            Planta.De(1),
+            categoriaReserva,
+            tipoFisico != TipoEspacio.Despacho,
+            HorarioReservaDia.CrearHorarioPorDefecto()));
+    }
+
     // ── Pruebas de Permisos (F1-F4 / HU-13) ──────────────────────────────────
 
     [Fact]
